@@ -3,4 +3,4 @@
 set -o errexit
 set -o nounset
 
-go generate ./pkg/mocks
+go generate ./internal/mocks
