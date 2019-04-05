@@ -10,9 +10,9 @@ type Metric struct {
 	TS    time.Time
 }
 
-// Series is a group of metrics identified by an ID and a context
+// MetricSeries is a group of metrics identified by an ID and a context
 // information.
-type Series struct {
+type MetricSeries struct {
 	ID      string
 	Labels  map[string]string
 	Metrics []Metric
