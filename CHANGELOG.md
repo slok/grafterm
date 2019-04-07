@@ -4,6 +4,7 @@
 
 ### Added
 
+- Debug flag that will set a verbose logger (will break UI rendering but prints errors and infos).
 - Termdash render engine implementation for widgets.
 - Gauge widget.
 - Main term application.
