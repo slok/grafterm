@@ -6,13 +6,19 @@ import (
 
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/container"
+	"github.com/mum4k/termdash/container/grid"
 	"github.com/mum4k/termdash/linestyle"
 	"github.com/mum4k/termdash/terminal/termbox"
 	"github.com/mum4k/termdash/terminal/terminalapi"
+	"github.com/mum4k/termdash/widgetapi"
 
 	"github.com/slok/meterm/internal/model"
 	"github.com/slok/meterm/internal/service/log"
 	"github.com/slok/meterm/internal/view/render"
+)
+
+const (
+	rootID = "root"
 )
 
 // View is what renders the metrics.
@@ -49,23 +55,28 @@ func (t *termDashboard) Close() {
 func (t *termDashboard) LoadDashboard(ctx context.Context, dashboard model.Dashboard) ([]render.Widget, error) {
 
 	// Create main view (root).
-	c, err := container.New(
-		t.terminal,
-		container.Border(linestyle.Light),
-		container.BorderTitle("PRESS Q TO QUIT"),
-		t.loadDashboard(dashboard),
-	)
+	c, err := container.New(t.terminal, container.ID(rootID))
 	if err != nil {
 		return nil, err
 	}
 
-	quitter := func(k *terminalapi.Keyboard) {
-		if k.Key == 'q' || k.Key == 'Q' {
-			t.cancel()
-		}
+	// Get the layout from the grid.
+	gridOpts, err := t.gridLayout(dashboard)
+	if err != nil {
+		return []render.Widget{}, err
+	}
+
+	err = c.Update(rootID, gridOpts...)
+	if err != nil {
+		return []render.Widget{}, err
 	}
 
 	go func() {
+		quitter := func(k *terminalapi.Keyboard) {
+			if k.Key == 'q' || k.Key == 'Q' {
+				t.cancel()
+			}
+		}
 		if err := termdash.Run(ctx, t.terminal, c, termdash.KeyboardSubscriber(quitter), termdash.RedrawInterval(1*time.Second)); err != nil {
 			t.logger.Errorf("error running termdash terminal: %s", err)
 			// TODO(slok): exit on error.
@@ -75,81 +86,58 @@ func (t *termDashboard) LoadDashboard(ctx context.Context, dashboard model.Dashb
 	return t.widgets, nil
 }
 
-func (t *termDashboard) loadDashboard(dashboard model.Dashboard) container.Option {
-	return t.loadRow(dashboard.Rows)
-}
+func (t *termDashboard) gridLayout(dashboard model.Dashboard) ([]container.Option, error) {
+	builder := grid.New()
 
-func (t *termDashboard) loadRow(rows []model.Row) container.Option {
-	if len(rows) == 0 {
-		return nil
-	}
+	gridElements := []grid.Element{}
 
-	if len(rows) == 1 {
-		return t.loadWidget(rows[0].Widgets)
-	}
+	// Create each row.
+	rowHeightPerc := 100 / len(dashboard.Rows) // All rows same percentage of screen height.
+	for _, rowcfg := range dashboard.Rows {
 
-	// Start splitting.
-	spl := len(rows) / 2
+		// TODO(slok): Allow different percentage per widget.
+		widgetColPerc := 100 / len(rowcfg.Widgets) // All widgets same percentage of screen height.
 
-	// Top, check if we are on a leaf to add extra opts.
-	topSpl := rows[:spl]
-	topOpts := []container.Option{}
-	if len(topSpl) == 1 {
-		topOpts = t.getRowExtraOpts(topSpl[0])
-	}
-	topOpts = append(topOpts, t.loadRow(topSpl))
-	top := container.Top(topOpts...)
+		// Create widgets per row
+		var elements []grid.Element
+		for _, widgetcfg := range rowcfg.Widgets {
 
-	// Bottom, check if we are on a leaf to add extra opts.
-	bottomSpl := rows[spl:]
-	bottomOpts := []container.Option{}
-	if len(bottomSpl) == 1 {
-		bottomOpts = t.getRowExtraOpts(bottomSpl[0])
-	}
-	bottomOpts = append(bottomOpts, t.loadRow(bottomSpl))
-	bottom := container.Bottom(bottomOpts...)
+			var err error
+			var widget render.Widget
 
-	return container.SplitHorizontal(top, bottom)
-}
+			// New widget.
+			switch {
+			case widgetcfg.Gauge != nil:
+				widget, err = newGauge(widgetcfg)
+				if err != nil {
+					t.logger.Errorf("error creating gauge: %s", err)
+					continue
+				}
+			case widgetcfg.SingleStat != nil:
+				// TODO(slok)
+			}
 
-func (t *termDashboard) getRowExtraOpts(row model.Row) []container.Option {
-	extraOpts := []container.Option{}
-	if row.Title != "" {
-		extraOpts = append(extraOpts, container.BorderTitle(row.Title))
-	}
+			// Add widget to the tracked widgets so the app can control them.
+			t.widgets = append(t.widgets, widget)
 
-	if row.Border {
-		extraOpts = append(extraOpts, container.Border(linestyle.Light))
-	}
-	return extraOpts
-}
+			// Create the element and set a size
+			element := grid.Widget(widget.(widgetapi.Widget),
+				container.Border(linestyle.Light),
+				container.BorderTitle(widgetcfg.Title),
+			)
+			element = grid.ColWidthPerc(widgetColPerc, element)
 
-func (t *termDashboard) loadWidget(ws []model.Widget) container.Option {
-	if len(ws) == 0 {
-		return nil
-	}
-
-	if len(ws) == 1 {
-		// New widget.
-		// TODO(slok): Check other widgets.
-		cfg := ws[0]
-		w, err := newGauge(cfg)
-		if err != nil {
-			t.logger.Errorf("error creating gauge: %s", err)
+			// Append to the row.
+			elements = append(elements, element)
 		}
-		t.widgets = append(t.widgets, w)
 
-		return container.PlaceWidget(w)
+		rowElement := grid.RowHeightPerc(rowHeightPerc, elements...)
+		gridElements = append(gridElements, rowElement)
 	}
 
-	// Start splitting.
-	spl := len(ws) / 2
-	return container.SplitVertical(
-		container.Left(
-			t.loadWidget(ws[:spl]),
-		),
-		container.Right(
-			t.loadWidget(ws[spl:]),
-		),
-	)
+	// Add rows.
+	builder.Add(gridElements...)
+
+	// Get the layout from the grid.
+	return builder.Build()
 }
