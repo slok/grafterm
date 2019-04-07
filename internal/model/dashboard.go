@@ -14,6 +14,7 @@ type Row struct {
 
 // Widget represents a widget.
 type Widget struct {
+	Title        string `json:"title,omitempty"`
 	WidgetSource `json:",inline"`
 }
 
