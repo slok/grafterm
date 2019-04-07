@@ -4,6 +4,7 @@
 
 ### Added
 
+- Termdash render engine implementation for widgets.
 - Gauge widget.
 - Main term application.
 - Fake metrics gatherer.
