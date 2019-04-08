@@ -92,11 +92,11 @@ func (t *termDashboard) gridLayout(dashboard model.Dashboard) ([]container.Optio
 	gridElements := []grid.Element{}
 
 	// Create each row.
-	rowHeightPerc := 100 / len(dashboard.Rows) // All rows same percentage of screen height.
+	rowHeightPerc := (100 / len(dashboard.Rows)) - 1 // All rows same percentage of screen height.
 	for _, rowcfg := range dashboard.Rows {
 
 		// TODO(slok): Allow different percentage per widget.
-		widgetColPerc := 100 / len(rowcfg.Widgets) // All widgets same percentage of screen height.
+		widgetColPerc := (100 / len(rowcfg.Widgets)) - 1 // All widgets same percentage of screen height.
 
 		// Create widgets per row
 		var elements []grid.Element
@@ -113,8 +113,12 @@ func (t *termDashboard) gridLayout(dashboard model.Dashboard) ([]container.Optio
 					t.logger.Errorf("error creating gauge: %s", err)
 					continue
 				}
-			case widgetcfg.SingleStat != nil:
-				// TODO(slok)
+			case widgetcfg.Singlestat != nil:
+				widget, err = newSinglestat(widgetcfg)
+				if err != nil {
+					t.logger.Errorf("error creating gauge: %s", err)
+					continue
+				}
 			}
 
 			// Add widget to the tracked widgets so the app can control them.

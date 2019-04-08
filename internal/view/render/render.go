@@ -25,3 +25,11 @@ type GaugeWidget interface {
 	Sync(isPercent bool, value float64) error
 	SetColor(hexColor string) error
 }
+
+// SinglestatWidget knows how to render a Singlestat kind widget that can render text
+// and supports changing color.
+type SinglestatWidget interface {
+	Widget
+	Sync(value float64) error
+	SetColor(hexColor string) error
+}

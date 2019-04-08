@@ -20,13 +20,14 @@ type Widget struct {
 
 // WidgetSource will tell what kind of widget is.
 type WidgetSource struct {
-	SingleStat *SingleStatWidgetSource `json:"singleStat,omitempty"`
+	Singlestat *SinglestatWidgetSource `json:"singlestat,omitempty"`
 	Gauge      *GaugeWidgetSource      `json:"gauge,omitempty"`
 }
 
-// SingleStatWidgetSource represents a simple value widget.
-type SingleStatWidgetSource struct {
+// SinglestatWidgetSource represents a simple value widget.
+type SinglestatWidgetSource struct {
 	Query      Query       `json:"query,omitempty"`
+	TextFormat string      `json:"textFormat,omitempty"`
 	Thresholds []Threshold `json:"thresholds,omitempty"`
 }
 
