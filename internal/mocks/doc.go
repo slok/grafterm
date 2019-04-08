@@ -13,3 +13,6 @@ package mocks // import "github.com/slok/meterm/internal/mocks"
 
 // Services mocks.
 //go:generate mockery -output ./service/metric -outpkg metric -dir ../service/metric -name Gatherer
+
+// 3rd party
+//go:generate mockery -output ./github.com/prometheus/client_golang/api/prometheus/v1 -outpkg v1 -dir ./thirdparty/github.com/prometheus/client_golang/api/prometheus/v1 -name API
