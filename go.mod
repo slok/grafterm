@@ -10,5 +10,7 @@ require (
 	github.com/mum4k/termdash v0.8.0
 	github.com/nsf/termbox-go v0.0.0-20190325093121-288510b9734e // indirect
 	github.com/oklog/run v1.0.0
+	github.com/prometheus/client_golang v0.9.2
+	github.com/prometheus/common v0.0.0-20181126121408-4724e9255275
 	github.com/stretchr/testify v1.3.0
 )
