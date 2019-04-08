@@ -117,7 +117,7 @@ func TestGaugeWidget(t *testing.T) {
 				err = app.Run(ctx, model.Dashboard{})
 			}()
 
-			// Give time to
+			// Give time to sync.
 			time.Sleep(10 * time.Millisecond)
 			cancel()
 

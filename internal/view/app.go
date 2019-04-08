@@ -108,6 +108,10 @@ func (a *App) createWidgets(rws []render.Widget) []widget {
 		switch v := rw.(type) {
 		case render.GaugeWidget:
 			w = newGauge(a.controller, v)
+		case render.SinglestatWidget:
+			w = newSinglestat(a.controller, v)
+		default:
+			continue
 		}
 
 		widgets = append(widgets, w)
