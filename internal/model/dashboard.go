@@ -42,7 +42,7 @@ type GaugeWidgetSource struct {
 
 // Query is the query that will be made to the datasource.
 type Query struct {
-	Query string `json:"query,omitempty"`
+	Expr string `json:"expr,omitempty"`
 	// TODO(slok): Datasources.
 }
 
