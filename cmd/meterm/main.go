@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,7 +10,8 @@ import (
 	"github.com/oklog/run"
 
 	"github.com/slok/meterm/internal/controller"
-	"github.com/slok/meterm/internal/model"
+	"github.com/slok/meterm/internal/service/configuration"
+	configurationv1 "github.com/slok/meterm/internal/service/configuration/v1"
 	"github.com/slok/meterm/internal/service/log"
 	"github.com/slok/meterm/internal/service/metric"
 	"github.com/slok/meterm/internal/view"
@@ -43,23 +42,13 @@ func (m *Main) Run() error {
 		m.logger = log.STD
 	}
 
-	// Create gatherer.
-	gatherer := &metric.FakeGatherer{}
+	// Load configuration.
+	cfg, err := m.loadConfiguration()
+	if err != nil {
+		return err
+	}
 
-	// Load dashboard file.
-	f, err := os.Open(m.flags.cfg)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	dashboard := &model.Dashboard{}
-	bs, err := ioutil.ReadAll(f)
-	if err != nil {
-		return err
-	}
-	if err := json.Unmarshal(bs, dashboard); err != nil {
-		return err
-	}
+	gatherer := &metric.FakeGatherer{}
 
 	// Create controller.
 	ctrl := controller.NewController(gatherer)
@@ -103,7 +92,7 @@ func (m *Main) Run() error {
 
 		g.Add(
 			func() error {
-				err := app.Run(ctx, *dashboard)
+				err := app.Run(ctx, cfg.GetDashboard())
 				if err != nil {
 					return err
 				}
@@ -116,6 +105,23 @@ func (m *Main) Run() error {
 	}
 
 	return g.Run()
+}
+
+func (m *Main) loadConfiguration() (configuration.Configuration, error) {
+	// Load dashboard file.
+	f, err := os.Open(m.flags.cfg)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	// For now only v1 supported.
+	cfg, err := configurationv1.JSONLoader{}.Load(f)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
 }
 
 func main() {
