@@ -227,7 +227,7 @@ func TestGathererGatherSingle(t *testing.T) {
 			test.cfg.Client = mapi
 
 			g := prometheus.NewGatherer(test.cfg, log.Dummy)
-			gotms, err := g.GatherSingle(context.TODO(), "", time.Now())
+			gotms, err := g.GatherSingle(context.TODO(), model.Query{}, time.Now())
 
 			if test.expErr {
 				assert.Error(err)

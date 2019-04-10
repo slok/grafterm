@@ -10,7 +10,6 @@ import (
 	prommodel "github.com/prometheus/common/model"
 
 	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/log"
 	"github.com/slok/meterm/internal/service/metric"
 )
 
@@ -29,16 +28,16 @@ type gatherer struct {
 }
 
 // NewGatherer returns a new metric gatherer for prometheus backends.
-func NewGatherer(cfg ConfigGatherer, logger log.Logger) metric.Gatherer {
+func NewGatherer(cfg ConfigGatherer) metric.Gatherer {
 	return &gatherer{
 		cli: cfg.Client,
 		cfg: cfg,
 	}
 }
 
-func (g *gatherer) GatherSingle(ctx context.Context, query string, t time.Time) ([]model.MetricSeries, error) {
+func (g *gatherer) GatherSingle(ctx context.Context, query model.Query, t time.Time) ([]model.MetricSeries, error) {
 	// Get value from Prometheus.
-	val, err := g.cli.Query(ctx, query, t)
+	val, err := g.cli.Query(ctx, query.Expr, t)
 	if err != nil {
 		return []model.MetricSeries{}, err
 	}
