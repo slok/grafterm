@@ -1,4 +1,4 @@
-package metric
+package fake
 
 import (
 	"context"
@@ -7,11 +7,11 @@ import (
 	"github.com/slok/meterm/internal/model"
 )
 
-// FakeGatherer is a fake Gatherer.
-type FakeGatherer struct{}
+// Gatherer is a fake Gatherer.
+type Gatherer struct{}
 
 // GatherSingle satisfies metric.Gatherer interface.
-func (f FakeGatherer) GatherSingle(_ context.Context, _ string, t time.Time) ([]model.MetricSeries, error) {
+func (g Gatherer) GatherSingle(_ context.Context, _ model.Query, t time.Time) ([]model.MetricSeries, error) {
 	return []model.MetricSeries{
 		model.MetricSeries{
 			ID: "fake",
