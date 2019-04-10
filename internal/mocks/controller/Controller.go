@@ -14,11 +14,11 @@ type Controller struct {
 }
 
 // GetSingleInstantMetric provides a mock function with given fields: ctx, query
-func (_m *Controller) GetSingleInstantMetric(ctx context.Context, query string) (*model.Metric, error) {
+func (_m *Controller) GetSingleInstantMetric(ctx context.Context, query model.Query) (*model.Metric, error) {
 	ret := _m.Called(ctx, query)
 
 	var r0 *model.Metric
-	if rf, ok := ret.Get(0).(func(context.Context, string) *model.Metric); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, model.Query) *model.Metric); ok {
 		r0 = rf(ctx, query)
 	} else {
 		if ret.Get(0) != nil {
@@ -27,7 +27,7 @@ func (_m *Controller) GetSingleInstantMetric(ctx context.Context, query string) 
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, model.Query) error); ok {
 		r1 = rf(ctx, query)
 	} else {
 		r1 = ret.Error(1)
@@ -37,11 +37,11 @@ func (_m *Controller) GetSingleInstantMetric(ctx context.Context, query string) 
 }
 
 // GetSingleMetric provides a mock function with given fields: ctx, query, t
-func (_m *Controller) GetSingleMetric(ctx context.Context, query string, t time.Time) (*model.Metric, error) {
+func (_m *Controller) GetSingleMetric(ctx context.Context, query model.Query, t time.Time) (*model.Metric, error) {
 	ret := _m.Called(ctx, query, t)
 
 	var r0 *model.Metric
-	if rf, ok := ret.Get(0).(func(context.Context, string, time.Time) *model.Metric); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, model.Query, time.Time) *model.Metric); ok {
 		r0 = rf(ctx, query, t)
 	} else {
 		if ret.Get(0) != nil {
@@ -50,7 +50,7 @@ func (_m *Controller) GetSingleMetric(ctx context.Context, query string, t time.
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, time.Time) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, model.Query, time.Time) error); ok {
 		r1 = rf(ctx, query, t)
 	} else {
 		r1 = ret.Error(1)

@@ -48,7 +48,7 @@ func (g *gauge) sync(ctx context.Context) error {
 	defer g.syncLock.Set(false)
 
 	// Gather the gauge value.
-	m, err := g.controller.GetSingleInstantMetric(ctx, g.cfg.Gauge.Query.Expr)
+	m, err := g.controller.GetSingleInstantMetric(ctx, g.cfg.Gauge.Query)
 	if err != nil {
 		return fmt.Errorf("error getting single instant metric: %s", err)
 	}

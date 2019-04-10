@@ -106,7 +106,7 @@ func TestGaugeWidget(t *testing.T) {
 			test.exp(mgauge)
 
 			mc := &mcontroller.Controller{}
-			mc.On("GetSingleInstantMetric", mock.Anything, test.cfg.Gauge.Query.Expr).Return(test.controllerMetric, nil)
+			mc.On("GetSingleInstantMetric", mock.Anything, test.cfg.Gauge.Query).Return(test.controllerMetric, nil)
 			mr := &mrender.Renderer{}
 			mr.On("LoadDashboard", mock.Anything, mock.Anything).Once().Return([]render.Widget{mgauge}, nil)
 

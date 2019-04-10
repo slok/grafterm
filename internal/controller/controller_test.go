@@ -17,7 +17,7 @@ import (
 func TestGetSingleMetric(t *testing.T) {
 	tests := []struct {
 		name           string
-		query          string
+		query          model.Query
 		serviceMetrics []model.MetricSeries
 		serviceErr     error
 		ts             time.Time
@@ -26,7 +26,7 @@ func TestGetSingleMetric(t *testing.T) {
 	}{
 		{
 			name:  "Returning a correct metric the controller should handle the single metric correctly.",
-			query: "test",
+			query: model.Query{Expr: "test"},
 			serviceMetrics: []model.MetricSeries{
 				model.MetricSeries{
 					Metrics: []model.Metric{
@@ -39,7 +39,7 @@ func TestGetSingleMetric(t *testing.T) {
 		},
 		{
 			name:  "Returning multiple metrics should error.",
-			query: "test",
+			query: model.Query{Expr: "test"},
 			serviceMetrics: []model.MetricSeries{
 				model.MetricSeries{
 					Metrics: []model.Metric{
@@ -53,7 +53,7 @@ func TestGetSingleMetric(t *testing.T) {
 		},
 		{
 			name:  "Returning no metrics should error.",
-			query: "test",
+			query: model.Query{Expr: "test"},
 			serviceMetrics: []model.MetricSeries{
 				model.MetricSeries{
 					Metrics: []model.Metric{},
@@ -64,14 +64,14 @@ func TestGetSingleMetric(t *testing.T) {
 		},
 		{
 			name:           "Returning no metric series should error.",
-			query:          "test",
+			query:          model.Query{Expr: "test"},
 			serviceMetrics: []model.MetricSeries{},
 			ts:             time.Now(),
 			expErr:         true,
 		},
 		{
 			name:  "Returning multiple metric series should error.",
-			query: "test",
+			query: model.Query{Expr: "test"},
 			serviceMetrics: []model.MetricSeries{
 				model.MetricSeries{},
 				model.MetricSeries{},
@@ -81,7 +81,7 @@ func TestGetSingleMetric(t *testing.T) {
 		},
 		{
 			name:       "Returning a error from the metrics service should error.",
-			query:      "test",
+			query:      model.Query{Expr: "test"},
 			serviceErr: errors.New("wanted error"),
 			ts:         time.Now(),
 			expErr:     true,

@@ -14,11 +14,11 @@ type Gatherer struct {
 }
 
 // GatherSingle provides a mock function with given fields: ctx, query, t
-func (_m *Gatherer) GatherSingle(ctx context.Context, query string, t time.Time) ([]model.MetricSeries, error) {
+func (_m *Gatherer) GatherSingle(ctx context.Context, query model.Query, t time.Time) ([]model.MetricSeries, error) {
 	ret := _m.Called(ctx, query, t)
 
 	var r0 []model.MetricSeries
-	if rf, ok := ret.Get(0).(func(context.Context, string, time.Time) []model.MetricSeries); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, model.Query, time.Time) []model.MetricSeries); ok {
 		r0 = rf(ctx, query, t)
 	} else {
 		if ret.Get(0) != nil {
@@ -27,7 +27,7 @@ func (_m *Gatherer) GatherSingle(ctx context.Context, query string, t time.Time)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, time.Time) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, model.Query, time.Time) error); ok {
 		r1 = rf(ctx, query, t)
 	} else {
 		r1 = ret.Error(1)
