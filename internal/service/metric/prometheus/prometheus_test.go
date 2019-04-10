@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/log"
 	"github.com/slok/meterm/internal/service/metric/prometheus"
 )
 
@@ -226,7 +225,7 @@ func TestGathererGatherSingle(t *testing.T) {
 			mapi.On("Query", mock.Anything, mock.Anything, mock.Anything).Once().Return(test.prommetric, expErr)
 			test.cfg.Client = mapi
 
-			g := prometheus.NewGatherer(test.cfg, log.Dummy)
+			g := prometheus.NewGatherer(test.cfg)
 			gotms, err := g.GatherSingle(context.TODO(), model.Query{}, time.Now())
 
 			if test.expErr {
