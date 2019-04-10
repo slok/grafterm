@@ -72,7 +72,7 @@ func TestSinglestatWidget(t *testing.T) {
 			test.exp(msstat)
 
 			mc := &mcontroller.Controller{}
-			mc.On("GetSingleInstantMetric", mock.Anything, test.cfg.Singlestat.Query.Expr).Return(test.controllerMetric, nil)
+			mc.On("GetSingleInstantMetric", mock.Anything, test.cfg.Singlestat.Query).Return(test.controllerMetric, nil)
 			mr := &mrender.Renderer{}
 			mr.On("LoadDashboard", mock.Anything, mock.Anything).Once().Return([]render.Widget{msstat}, nil)
 

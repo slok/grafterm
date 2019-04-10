@@ -48,7 +48,7 @@ func (s *singlestat) sync(ctx context.Context) error {
 	defer s.syncLock.Set(false)
 
 	// Gather the value.
-	m, err := s.controller.GetSingleInstantMetric(ctx, s.cfg.Singlestat.Query.Expr)
+	m, err := s.controller.GetSingleInstantMetric(ctx, s.cfg.Singlestat.Query)
 	if err != nil {
 		return fmt.Errorf("error getting single instant metric: %s", err)
 	}
