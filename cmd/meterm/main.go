@@ -13,7 +13,7 @@ import (
 	"github.com/slok/meterm/internal/service/configuration"
 	configurationv1 "github.com/slok/meterm/internal/service/configuration/v1"
 	"github.com/slok/meterm/internal/service/log"
-	"github.com/slok/meterm/internal/service/metric"
+	metric "github.com/slok/meterm/internal/service/metric/datasource"
 	"github.com/slok/meterm/internal/view"
 	"github.com/slok/meterm/internal/view/render/termdash"
 )
@@ -48,7 +48,12 @@ func (m *Main) Run() error {
 		return err
 	}
 
-	gatherer := &metric.FakeGatherer{}
+	gatherer, err := metric.NewGatherer(metric.ConfigGatherer{
+		Datasources: cfg.GetDatasources(),
+	})
+	if err != nil {
+		return err
+	}
 
 	// Create controller.
 	ctrl := controller.NewController(gatherer)

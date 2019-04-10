@@ -42,8 +42,8 @@ type GaugeWidgetSource struct {
 
 // Query is the query that will be made to the datasource.
 type Query struct {
-	Expr string `json:"expr,omitempty"`
-	// TODO(slok): Datasources.
+	Expr         string `json:"expr,omitempty"`
+	DatasourceID string `json:"datasourceID,omitempty"`
 }
 
 // Threshold is a color threshold that is composed
