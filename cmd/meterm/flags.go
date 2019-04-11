@@ -6,13 +6,15 @@ import (
 )
 
 const (
-	defConfig = "dashboard.json"
+	defConfig          = "dashboard.json"
+	defRefreshInterval = "10s"
 )
 
 type flags struct {
-	cfg     string
-	debug   bool
-	version bool
+	cfg             string
+	debug           bool
+	version         bool
+	refreshInterval string
 }
 
 func newFlags() (*flags, error) {
@@ -21,6 +23,7 @@ func newFlags() (*flags, error) {
 
 	// Register flags.
 	fl.StringVar(&flags.cfg, "cfg", defConfig, "the path to the configuration file")
+	fl.StringVar(&flags.refreshInterval, "refresh-interval", defRefreshInterval, "the interval to refresh the dashboard")
 	fl.BoolVar(&flags.debug, "debug", false, "enable debug mode")
 	fl.BoolVar(&flags.version, "version", false, "print version")
 

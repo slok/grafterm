@@ -12,23 +12,30 @@ import (
 	"github.com/slok/meterm/internal/view/render"
 )
 
+// AppConfig are the options to run the app.
+type AppConfig struct {
+	RefreshInterval time.Duration
+}
+
 // App represents the application that will render the metrics dashboard.
 type App struct {
 	controller controller.Controller
 	renderer   render.Renderer
 	logger     log.Logger
 	widgets    []widget
+	cfg        AppConfig
 
 	running bool
 	mu      sync.Mutex
 }
 
 // NewApp Is the main application
-func NewApp(controller controller.Controller, renderer render.Renderer, logger log.Logger) *App {
+func NewApp(cfg AppConfig, controller controller.Controller, renderer render.Renderer, logger log.Logger) *App {
 	return &App{
 		controller: controller,
 		renderer:   renderer,
 		logger:     logger,
+		cfg:        cfg,
 	}
 }
 
@@ -63,16 +70,14 @@ func (a *App) run(ctx context.Context, dashboard model.Dashboard) error {
 }
 
 func (a *App) sync(ctx context.Context) {
-	a.syncWidgets()
-
-	tk := time.NewTicker(1 * time.Second)
+	tk := time.NewTicker(a.cfg.RefreshInterval)
 	defer tk.Stop()
-	for range tk.C {
+	for {
 		// Check if we already done.
 		select {
 		case <-ctx.Done():
 			return
-		default:
+		case <-tk.C:
 		}
 
 		a.syncWidgets()
