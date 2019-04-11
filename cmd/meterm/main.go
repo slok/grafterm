@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/oklog/run"
 
@@ -93,7 +94,14 @@ func (m *Main) Run() error {
 
 	// Run application.
 	{
-		app := view.NewApp(ctrl, renderer, m.logger)
+		rd, err := time.ParseDuration(m.flags.refreshInterval)
+		if err != nil {
+			return err
+		}
+		appcfg := view.AppConfig{
+			RefreshInterval: rd,
+		}
+		app := view.NewApp(appcfg, ctrl, renderer, m.logger)
 
 		g.Add(
 			func() error {
