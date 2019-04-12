@@ -51,6 +51,26 @@ func (g *gatherer) GatherSingle(ctx context.Context, query model.Query, t time.T
 	return res, nil
 }
 
+func (g *gatherer) GatherRange(ctx context.Context, query model.Query, start, end time.Time, step time.Duration) ([]model.MetricSeries, error) {
+	// Get value from Prometheus.
+	val, err := g.cli.QueryRange(ctx, query.Expr, promv1.Range{
+		Start: start,
+		End:   end,
+		Step:  step,
+	})
+	if err != nil {
+		return []model.MetricSeries{}, err
+	}
+
+	// Translate prom values to domain.
+	res, err := g.promToModel(val)
+	if err != nil {
+		return []model.MetricSeries{}, err
+	}
+
+	return res, nil
+}
+
 // promToModel converts a prometheus result metric to a domain model one.
 func (g *gatherer) promToModel(pm prommodel.Value) ([]model.MetricSeries, error) {
 	res := []model.MetricSeries{}
@@ -63,7 +83,8 @@ func (g *gatherer) promToModel(pm prommodel.Value) ([]model.MetricSeries, error)
 		vector := pm.(prommodel.Vector)
 		res = g.transformVector(vector)
 	case prommodel.ValMatrix:
-		// TODO(slok).
+		matrix := pm.(prommodel.Matrix)
+		res = g.transformMatrix(matrix)
 	default:
 		return res, errors.New("prometheus value type not supported")
 	}
@@ -89,23 +110,17 @@ func (g *gatherer) transformScalar(scalar *prommodel.Scalar) []model.MetricSerie
 
 // transformVector will get a prometheus Vector and transform to a domain model
 // MetricSeries slice.
+// A Prometheus vector is an slice of metrics (group of labels) that have one
+// sample only (all samples from all metrics have the same timestamp)
 func (g *gatherer) transformVector(vector prommodel.Vector) []model.MetricSeries {
 	res := []model.MetricSeries{}
 
-	// Use a map to index the different series based on labels.
-	indexedSeries := map[string]model.MetricSeries{}
 	for _, sample := range vector {
-		index := sample.Metric.String()
-
-		// Do we already have the series? If not create a new one.
-		series, ok := indexedSeries[index]
-		if !ok {
-			labels := g.labelSetToMap(prommodel.LabelSet(sample.Metric))
-			series = model.MetricSeries{
-				ID:     g.getMetricName(labels),
-				Labels: g.sanitizeLabels(labels),
-			}
-			indexedSeries[index] = series
+		id := sample.Metric.String()
+		labels := g.labelSetToMap(prommodel.LabelSet(sample.Metric))
+		series := model.MetricSeries{
+			ID:     id,
+			Labels: g.sanitizeLabels(labels),
 		}
 
 		// Add the metric to the series.
@@ -113,11 +128,38 @@ func (g *gatherer) transformVector(vector prommodel.Vector) []model.MetricSeries
 			TS:    sample.Timestamp.Time(),
 			Value: float64(sample.Value),
 		})
-		indexedSeries[index] = series
+
+		res = append(res, series)
 	}
 
-	for _, v := range indexedSeries {
-		res = append(res, v)
+	return res
+}
+
+// transformMatrix will get a prometheus Matrix and transform to a domain model
+// MetricSeries slice.
+// A Prometheus Matrix is an slices of metrics (group of labels) that have multiple
+// samples (in a slice of samples).
+func (g *gatherer) transformMatrix(matrix prommodel.Matrix) []model.MetricSeries {
+	res := []model.MetricSeries{}
+
+	// Use a map to index the different series based on labels.
+	for _, sampleStream := range matrix {
+		id := sampleStream.Metric.String()
+		labels := g.labelSetToMap(prommodel.LabelSet(sampleStream.Metric))
+		series := model.MetricSeries{
+			ID:     id,
+			Labels: g.sanitizeLabels(labels),
+		}
+
+		// Add the metric to the series.
+		for _, sample := range sampleStream.Values {
+			series.Metrics = append(series.Metrics, model.Metric{
+				TS:    sample.Timestamp.Time(),
+				Value: float64(sample.Value),
+			})
+		}
+
+		res = append(res, series)
 	}
 
 	return res
@@ -150,12 +192,4 @@ func (g *gatherer) sanitizeLabels(m map[string]string) map[string]string {
 	}
 
 	return res
-}
-
-func (g *gatherer) getMetricName(labels map[string]string) string {
-	id, ok := labels[prommodel.MetricNameLabel]
-	if !ok {
-		return ""
-	}
-	return id
 }
