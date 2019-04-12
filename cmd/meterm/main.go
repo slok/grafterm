@@ -40,7 +40,15 @@ func (m *Main) Run() error {
 	// If debug mode then use a verbose logger.
 	m.logger = log.Dummy
 	if m.flags.debug {
-		m.logger = log.STD
+		f, err := os.OpenFile(m.flags.logPath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		m.logger = log.New(log.Config{
+			Output: f,
+		})
 	}
 
 	// Load configuration.
