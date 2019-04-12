@@ -90,6 +90,14 @@ func (g *gatherer) GatherSingle(ctx context.Context, query model.Query, t time.T
 	return dsg.GatherSingle(ctx, query, t)
 }
 
+func (g *gatherer) GatherRange(ctx context.Context, query model.Query, start, end time.Time, step time.Duration) ([]model.MetricSeries, error) {
+	dsg, ok := g.gatherers[query.DatasourceID]
+	if !ok {
+		return nil, fmt.Errorf("datasource %s does not exists", query.DatasourceID)
+	}
+	return dsg.GatherRange(ctx, query, start, end, step)
+}
+
 func createGatherer(cfg ConfigGatherer, ds model.Datasource) (metric.Gatherer, error) {
 	switch {
 	case ds.Prometheus != nil:

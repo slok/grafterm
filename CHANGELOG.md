@@ -4,6 +4,8 @@
 
 ### Added
 
+- Single metric gather.
+- Metric range gather.
 - Allow multiple datasources in the same dashboard.
 - Debug flag that will set a verbose logger (will break UI rendering but prints errors and infos).
 - Termdash render engine implementation for widgets.

@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// Metric represents a measured metrics in time.
+// Metric represents a measured value in time.
 type Metric struct {
 	Value float64
 	TS    time.Time
