@@ -33,3 +33,29 @@ type SinglestatWidget interface {
 	Sync(value float64) error
 	SetColor(hexColor string) error
 }
+
+// Value is the value of a metric.
+type Value float64
+
+// Series are the series that can be rendered.
+type Series struct {
+	Label string
+	Color string
+	// XLabels are the labels that will be displayed on the X axis
+	// the position of the label is the index of the slice.
+	XLabels []string
+	// Value slice index is X and the value itself is Y
+	Values []*Value
+}
+
+// GraphWidget knows how to render a Graph kind widget that renders lines in
+// a two axis space using lines, dots... depending on the render implementation.
+type GraphWidget interface {
+	Widget
+	// GetGraphPointQuantity will return the number of points the graph can display
+	// on the X axis at this given moment (is a best effort, when updating the graph
+	// could have changed the size).
+	GetGraphPointQuantity() int
+	// Sync will sync the different series on the graph.
+	Sync(series []Series) error
+}

@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	rootID = "root"
+	rootID         = "root"
+	redrawInterval = 250 * time.Millisecond
 )
 
 // View is what renders the metrics.
@@ -77,7 +78,7 @@ func (t *termDashboard) LoadDashboard(ctx context.Context, dashboard model.Dashb
 				t.cancel()
 			}
 		}
-		if err := termdash.Run(ctx, t.terminal, c, termdash.KeyboardSubscriber(quitter), termdash.RedrawInterval(1*time.Second)); err != nil {
+		if err := termdash.Run(ctx, t.terminal, c, termdash.KeyboardSubscriber(quitter), termdash.RedrawInterval(redrawInterval)); err != nil {
 			t.logger.Errorf("error running termdash terminal: %s", err)
 			// TODO(slok): exit on error.
 		}
@@ -117,6 +118,12 @@ func (t *termDashboard) gridLayout(dashboard model.Dashboard) ([]container.Optio
 				widget, err = newSinglestat(widgetcfg)
 				if err != nil {
 					t.logger.Errorf("error creating gauge: %s", err)
+					continue
+				}
+			case widgetcfg.Graph != nil:
+				widget, err = newGraph(widgetcfg)
+				if err != nil {
+					t.logger.Errorf("error creating graph: %s", err)
 					continue
 				}
 			}
