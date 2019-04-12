@@ -16,6 +16,8 @@ type Controller interface {
 	GetSingleMetric(ctx context.Context, query model.Query, t time.Time) (*model.Metric, error)
 	// GetSingleInstantMetric will get one single metric value in real time.
 	GetSingleInstantMetric(ctx context.Context, query model.Query) (*model.Metric, error)
+	// GetRangeMetrics will get N metrics based in a time range.
+	GetRangeMetrics(ctx context.Context, query model.Query, start, end time.Time, step time.Duration) ([]model.MetricSeries, error)
 }
 
 type controller struct {
@@ -48,4 +50,22 @@ func (c controller) GetSingleMetric(ctx context.Context, query model.Query, t ti
 
 func (c controller) GetSingleInstantMetric(ctx context.Context, query model.Query) (*model.Metric, error) {
 	return c.GetSingleMetric(ctx, query, time.Now().UTC())
+}
+
+func (c controller) GetRangeMetrics(ctx context.Context, query model.Query, start, end time.Time, step time.Duration) ([]model.MetricSeries, error) {
+	if step <= 0 {
+		return nil, fmt.Errorf("step must be positive")
+	}
+
+	if !start.Before(end) {
+		return nil, fmt.Errorf("start timestamp must be before end timestamp")
+	}
+
+	// Get the metrics.
+	s, err := c.gatherer.GatherRange(ctx, query, start, end, step)
+	if err != nil {
+		return []model.MetricSeries{}, err
+	}
+
+	return s, nil
 }
