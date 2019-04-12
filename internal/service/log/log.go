@@ -1,8 +1,9 @@
 package log
 
 import (
-	"fmt"
-	"log"
+	"io"
+
+	"github.com/rs/zerolog"
 )
 
 // Logger knows how to log.
@@ -19,16 +20,31 @@ type dummy struct{}
 func (d dummy) Infof(format string, args ...interface{})  {}
 func (d dummy) Errorf(format string, args ...interface{}) {}
 
-// STD is a logger that uses the standard go logger, mainly for debugging.
-var STD = &std{}
-
-type std struct{}
-
-func (s std) Infof(format string, args ...interface{}) {
-	f := fmt.Sprintf("[INFO] %s", format)
-	log.Printf(f, args...)
+// Config is the Logger configuration
+type Config struct {
+	Output io.Writer
 }
-func (s std) Errorf(format string, args ...interface{}) {
-	f := fmt.Sprintf("[ERROR] %s", format)
-	log.Printf(f, args...)
+
+// New returns a new logger.
+func New(cfg Config) Logger {
+	return newZero(cfg)
+}
+
+func newZero(cfg Config) Logger {
+	return &zero{
+		logger: zerolog.New(cfg.Output).With().
+			Timestamp().
+			Logger(),
+	}
+}
+
+type zero struct {
+	logger zerolog.Logger
+}
+
+func (z zero) Infof(format string, args ...interface{}) {
+	z.logger.Info().Msgf(format, args...)
+}
+func (z zero) Errorf(format string, args ...interface{}) {
+	z.logger.Error().Msgf(format, args...)
 }

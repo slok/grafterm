@@ -8,6 +8,7 @@ import (
 const (
 	defConfig          = "dashboard.json"
 	defRefreshInterval = "10s"
+	defLogPath         = "meterm.log"
 )
 
 type flags struct {
@@ -15,6 +16,7 @@ type flags struct {
 	debug           bool
 	version         bool
 	refreshInterval string
+	logPath         string
 }
 
 func newFlags() (*flags, error) {
@@ -24,7 +26,8 @@ func newFlags() (*flags, error) {
 	// Register flags.
 	fl.StringVar(&flags.cfg, "cfg", defConfig, "the path to the configuration file")
 	fl.StringVar(&flags.refreshInterval, "refresh-interval", defRefreshInterval, "the interval to refresh the dashboard")
-	fl.BoolVar(&flags.debug, "debug", false, "enable debug mode")
+	fl.StringVar(&flags.logPath, "log-path", defLogPath, "the path where the log output will be written")
+	fl.BoolVar(&flags.debug, "debug", false, "enable debug mode, on debug mode it will print logs to the desired output")
 	fl.BoolVar(&flags.version, "version", false, "print version")
 
 	fl.Parse(os.Args[1:])

@@ -21,3 +21,4 @@ vendor/
 
 # App specific
 dashboards/
+meterm.log
