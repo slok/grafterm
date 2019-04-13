@@ -12,9 +12,31 @@ import (
 	"github.com/slok/meterm/internal/view/render"
 )
 
+var (
+	defRelativeTimeRange = 1 * time.Hour
+	defRefreshInterval   = 10 * time.Second
+)
+
 // AppConfig are the options to run the app.
+// this configuration  has values at global app level.
 type AppConfig struct {
 	RefreshInterval time.Duration
+	TimeRangeStart  time.Time
+	TimeRangeEnd    time.Time
+}
+
+func (a *AppConfig) defaults() {
+	if a.RefreshInterval == 0 {
+		a.RefreshInterval = defRefreshInterval
+	}
+
+	if a.TimeRangeEnd.IsZero() {
+		a.TimeRangeEnd = time.Now()
+	}
+
+	if a.TimeRangeStart.IsZero() {
+		a.TimeRangeStart = a.TimeRangeEnd.Add(-1 * defRelativeTimeRange)
+	}
 }
 
 // App represents the application that will render the metrics dashboard.
@@ -31,6 +53,8 @@ type App struct {
 
 // NewApp Is the main application
 func NewApp(cfg AppConfig, controller controller.Controller, renderer render.Renderer, logger log.Logger) *App {
+	cfg.defaults()
+
 	return &App{
 		controller: controller,
 		renderer:   renderer,
@@ -70,6 +94,8 @@ func (a *App) run(ctx context.Context, dashboard model.Dashboard) error {
 }
 
 func (a *App) sync(ctx context.Context) {
+	a.syncWidgets()
+
 	tk := time.NewTicker(a.cfg.RefreshInterval)
 	defer tk.Stop()
 	for {
@@ -115,6 +141,8 @@ func (a *App) createWidgets(rws []render.Widget) []widget {
 			w = newGauge(a.controller, v)
 		case render.SinglestatWidget:
 			w = newSinglestat(a.controller, v)
+		case render.GraphWidget:
+			w = newGraph(a.cfg, a.controller, v, a.logger)
 		default:
 			continue
 		}

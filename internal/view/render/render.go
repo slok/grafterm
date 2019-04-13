@@ -44,7 +44,9 @@ type Series struct {
 	// XLabels are the labels that will be displayed on the X axis
 	// the position of the label is the index of the slice.
 	XLabels []string
-	// Value slice index is X and the value itself is Y
+	// Value slice, if there is no value we will use a nil value
+	// we could use NaN floats but nil is more idiomatic and easy
+	// to understand.
 	Values []*Value
 }
 

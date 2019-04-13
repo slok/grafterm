@@ -113,7 +113,9 @@ func TestGaugeWidget(t *testing.T) {
 			var err error
 			ctx, cancel := context.WithCancel(context.Background())
 			go func() {
-				app := view.NewApp(view.AppConfig{}, mc, mr, log.Dummy)
+				app := view.NewApp(view.AppConfig{
+					RefreshInterval: 1 * time.Second,
+				}, mc, mr, log.Dummy)
 				err = app.Run(ctx, model.Dashboard{})
 			}()
 

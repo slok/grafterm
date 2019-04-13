@@ -4,6 +4,7 @@
 
 ### Added
 
+- Graph widget.
 - Single metric gather.
 - Metric range gather.
 - Allow multiple datasources in the same dashboard.
