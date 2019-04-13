@@ -58,7 +58,7 @@ func (g *graph) syncSeries(series render.Series) error {
 	for i, value := range series.Values {
 		// Termdash  doesn't support no values.
 		// for now no values will be 0.
-		// TODO(slok): Tack the issue https://github.com/mum4k/termdash/issues/184
+		// TODO(slok): Track the issue https://github.com/mum4k/termdash/issues/184
 		var v float64
 		if value != nil {
 			v = float64(*value)

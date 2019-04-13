@@ -22,6 +22,7 @@ type Widget struct {
 type WidgetSource struct {
 	Singlestat *SinglestatWidgetSource `json:"singlestat,omitempty"`
 	Gauge      *GaugeWidgetSource      `json:"gauge,omitempty"`
+	Graph      *GraphWidgetSource      `json:"graph,omitempty"`
 }
 
 // SinglestatWidgetSource represents a simple value widget.
@@ -38,6 +39,11 @@ type GaugeWidgetSource struct {
 	Max          int         `json:"max,omitempty"`
 	Min          int         `json:"min,omitempty"`
 	Thresholds   []Threshold `json:"thresholds,omitempty"`
+}
+
+// GraphWidgetSource represents a simple value widget in donut format.
+type GraphWidgetSource struct {
+	Queries []Query `json:"queries,omitempty"`
 }
 
 // Query is the query that will be made to the datasource.
