@@ -35,7 +35,7 @@ func newSinglestat(controller controller.Controller, rendererWidget render.Singl
 	}
 }
 
-func (s *singlestat) sync(ctx context.Context) error {
+func (s *singlestat) sync(ctx context.Context, cfg syncConfig) error {
 	// If already syncinc ignore call.
 	if s.syncLock.Get() {
 		return nil

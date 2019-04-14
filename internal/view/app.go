@@ -20,22 +20,18 @@ var (
 // AppConfig are the options to run the app.
 // this configuration  has values at global app level.
 type AppConfig struct {
-	RefreshInterval time.Duration
-	TimeRangeStart  time.Time
-	TimeRangeEnd    time.Time
+	RefreshInterval   time.Duration
+	TimeRangeStart    time.Time // Fixed optional time.
+	TimeRangeEnd      time.Time // Fixed optional time.
+	RelativeTimeRange time.Duration
 }
 
 func (a *AppConfig) defaults() {
 	if a.RefreshInterval == 0 {
 		a.RefreshInterval = defRefreshInterval
 	}
-
-	if a.TimeRangeEnd.IsZero() {
-		a.TimeRangeEnd = time.Now()
-	}
-
-	if a.TimeRangeStart.IsZero() {
-		a.TimeRangeStart = a.TimeRangeEnd.Add(-1 * defRelativeTimeRange)
+	if a.RelativeTimeRange == 0 {
+		a.RelativeTimeRange = defRelativeTimeRange
 	}
 }
 
@@ -112,6 +108,7 @@ func (a *App) sync(ctx context.Context) {
 
 func (a *App) syncWidgets() {
 	ctx := context.Background()
+	cfg := a.getSyncConfig()
 
 	// Sync all widgets.
 	for _, w := range a.widgets {
@@ -120,7 +117,7 @@ func (a *App) syncWidgets() {
 			// Don't wait to sync all at the same time, the widgets
 			// should control multiple calls to sync and reject the sync
 			// if already syncing.
-			err := w.sync(ctx)
+			err := w.sync(ctx, cfg)
 			if err != nil {
 				a.logger.Errorf("error syncing widget: %s", err)
 			}
@@ -142,7 +139,7 @@ func (a *App) createWidgets(rws []render.Widget) []widget {
 		case render.SinglestatWidget:
 			w = newSinglestat(a.controller, v)
 		case render.GraphWidget:
-			w = newGraph(a.cfg, a.controller, v, a.logger)
+			w = newGraph(a.controller, v, a.logger)
 		default:
 			continue
 		}
@@ -151,4 +148,21 @@ func (a *App) createWidgets(rws []render.Widget) []widget {
 	}
 
 	return widgets
+}
+
+func (a *App) getSyncConfig() syncConfig {
+	cfg := syncConfig{
+		timeRangeStart: a.cfg.TimeRangeStart,
+		timeRangeEnd:   a.cfg.TimeRangeEnd,
+	}
+
+	if cfg.timeRangeEnd.IsZero() {
+		cfg.timeRangeEnd = time.Now()
+	}
+
+	if cfg.timeRangeStart.IsZero() {
+		cfg.timeRangeStart = cfg.timeRangeEnd.Add(-1 * a.cfg.RelativeTimeRange)
+	}
+
+	return cfg
 }

@@ -29,25 +29,23 @@ var (
 type graph struct {
 	controller     controller.Controller
 	rendererWidget render.GraphWidget
-	appCfg         AppConfig
 	widgetCfg      model.Widget
 	syncLock       syncingFlag
 	logger         log.Logger
 }
 
-func newGraph(appCfg AppConfig, controller controller.Controller, rendererWidget render.GraphWidget, logger log.Logger) widget {
+func newGraph(controller controller.Controller, rendererWidget render.GraphWidget, logger log.Logger) widget {
 	wcfg := rendererWidget.GetWidgetCfg()
 
 	return &graph{
 		controller:     controller,
 		rendererWidget: rendererWidget,
-		appCfg:         appCfg,
 		widgetCfg:      wcfg,
 		logger:         logger,
 	}
 }
 
-func (g *graph) sync(ctx context.Context) error {
+func (g *graph) sync(ctx context.Context, cfg syncConfig) error {
 	// If already syncing ignore call.
 	if g.syncLock.Get() {
 		return nil
@@ -69,8 +67,8 @@ func (g *graph) sync(ctx context.Context) error {
 	}
 
 	// Gather metrics from multiple queries.
-	start := g.appCfg.TimeRangeStart
-	end := g.appCfg.TimeRangeEnd
+	start := cfg.timeRangeStart
+	end := cfg.timeRangeEnd
 	step := end.Sub(start) / time.Duration(cap)
 	allSeries := [][]model.MetricSeries{}
 	for _, q := range g.widgetCfg.Graph.Queries {

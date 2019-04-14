@@ -106,8 +106,19 @@ func (m *Main) Run() error {
 		if err != nil {
 			return err
 		}
+
+		var relTR time.Duration
+		if m.flags.relativeTimeRange != "" {
+			r, err := time.ParseDuration(m.flags.relativeTimeRange)
+			if err != nil {
+				return err
+			}
+			relTR = r
+		}
+
 		appcfg := view.AppConfig{
-			RefreshInterval: rd,
+			RefreshInterval:   rd,
+			RelativeTimeRange: relTR,
 		}
 		app := view.NewApp(appcfg, ctrl, renderer, m.logger)
 
