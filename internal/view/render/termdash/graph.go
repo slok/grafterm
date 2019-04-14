@@ -11,6 +11,7 @@ import (
 // graph satisfies render.GraphWidget interface.
 type graph struct {
 	cfg model.Widget
+
 	*linechart.LineChart
 }
 
@@ -21,6 +22,7 @@ func newGraph(cfg model.Widget) (*graph, error) {
 		linechart.AxesCellOpts(cell.FgColor(cell.ColorRed)),
 		linechart.YLabelCellOpts(cell.FgColor(cell.ColorGreen)),
 		linechart.XLabelCellOpts(cell.FgColor(cell.ColorCyan)),
+		linechart.YAxisAdaptive(),
 	)
 	if err != nil {
 		return nil, err
@@ -59,7 +61,7 @@ func (g *graph) syncSeries(series render.Series) error {
 		// Termdash  doesn't support no values.
 		// for now no values will be 0.
 		// TODO(slok): Track the issue https://github.com/mum4k/termdash/issues/184
-		var v float64
+		v := 0.0
 		if value != nil {
 			v = float64(*value)
 		}
