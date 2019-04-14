@@ -35,7 +35,7 @@ func newGauge(controller controller.Controller, rendererWidget render.GaugeWidge
 	}
 }
 
-func (g *gauge) sync(ctx context.Context) error {
+func (g *gauge) sync(ctx context.Context, cfg syncConfig) error {
 	// If already syncinc ignore call.
 	if g.syncLock.Get() {
 		return nil
