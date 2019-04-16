@@ -7,10 +7,8 @@ import (
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/container"
 	"github.com/mum4k/termdash/container/grid"
-	"github.com/mum4k/termdash/linestyle"
 	"github.com/mum4k/termdash/terminal/termbox"
 	"github.com/mum4k/termdash/terminal/terminalapi"
-	"github.com/mum4k/termdash/widgetapi"
 
 	"github.com/slok/meterm/internal/model"
 	"github.com/slok/meterm/internal/service/log"
@@ -21,6 +19,14 @@ const (
 	rootID         = "root"
 	redrawInterval = 250 * time.Millisecond
 )
+
+// elementer is an internal interface that all widgets from the termdash
+// render engine implementation need to implement, this way the widgets
+// can create subelements by their own and the `termDashboard` does not
+// to be aware, so a widget can be composed of 2 widgets under the hoods.
+type elementer interface {
+	getElement() grid.Element
+}
 
 // View is what renders the metrics.
 type termDashboard struct {
@@ -127,15 +133,11 @@ func (t *termDashboard) gridLayout(dashboard model.Dashboard) ([]container.Optio
 					continue
 				}
 			}
-
 			// Add widget to the tracked widgets so the app can control them.
 			t.widgets = append(t.widgets, widget)
 
-			// Create the element and set a size
-			element := grid.Widget(widget.(widgetapi.Widget),
-				container.Border(linestyle.Light),
-				container.BorderTitle(widgetcfg.Title),
-			)
+			// Get the grind.Element from our widget and place on the grid.
+			element := widget.(elementer).getElement()
 			element = grid.ColWidthPerc(widgetColPerc, element)
 
 			// Append to the row.
