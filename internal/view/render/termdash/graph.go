@@ -2,6 +2,9 @@ package termdash
 
 import (
 	"github.com/mum4k/termdash/cell"
+	"github.com/mum4k/termdash/container"
+	"github.com/mum4k/termdash/container/grid"
+	"github.com/mum4k/termdash/linestyle"
 	"github.com/mum4k/termdash/widgets/linechart"
 
 	"github.com/slok/meterm/internal/model"
@@ -12,7 +15,8 @@ import (
 type graph struct {
 	cfg model.Widget
 
-	*linechart.LineChart
+	widget  *linechart.LineChart
+	element grid.Element
 }
 
 func newGraph(cfg model.Widget) (*graph, error) {
@@ -28,10 +32,21 @@ func newGraph(cfg model.Widget) (*graph, error) {
 		return nil, err
 	}
 
+	// Create the element using the new widget.
+	element := grid.Widget(lc,
+		container.Border(linestyle.Light),
+		container.BorderTitle(cfg.Title),
+	)
+
 	return &graph{
-		LineChart: lc,
-		cfg:       cfg,
+		widget:  lc,
+		cfg:     cfg,
+		element: element,
 	}, nil
+}
+
+func (g *graph) getElement() grid.Element {
+	return g.element
 }
 
 func (g *graph) GetWidgetCfg() model.Widget {
@@ -68,7 +83,7 @@ func (g *graph) syncSeries(series render.Series) error {
 		values[i] = v
 	}
 
-	err = g.LineChart.Series(series.Label, values,
+	err = g.widget.Series(series.Label, values,
 		linechart.SeriesCellOpts(cell.FgColor(color)),
 		linechart.SeriesXLabels(g.xLabelsSliceToMap(series.XLabels)))
 	if err != nil {
@@ -79,7 +94,7 @@ func (g *graph) syncSeries(series render.Series) error {
 }
 
 func (g *graph) GetGraphPointQuantity() int {
-	return g.LineChart.ValueCapacity()
+	return g.widget.ValueCapacity()
 }
 
 func (g *graph) xLabelsSliceToMap(labels []string) map[int]string {

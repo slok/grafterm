@@ -2,6 +2,9 @@ package termdash
 
 import (
 	"github.com/mum4k/termdash/cell"
+	"github.com/mum4k/termdash/container"
+	"github.com/mum4k/termdash/container/grid"
+	"github.com/mum4k/termdash/linestyle"
 	"github.com/mum4k/termdash/widgets/donut"
 
 	"github.com/slok/meterm/internal/model"
@@ -10,7 +13,9 @@ import (
 // gauge satisfies render.GaugeWidget interface.
 type gauge struct {
 	cfg model.Widget
-	*donut.Donut
+
+	widget  *donut.Donut
+	element grid.Element
 }
 
 func newGauge(cfg model.Widget) (*gauge, error) {
@@ -20,10 +25,21 @@ func newGauge(cfg model.Widget) (*gauge, error) {
 		return nil, err
 	}
 
+	// Create the element using the new widget.
+	element := grid.Widget(donut,
+		container.Border(linestyle.Light),
+		container.BorderTitle(cfg.Title),
+	)
+
 	return &gauge{
-		Donut: donut,
-		cfg:   cfg,
+		widget:  donut,
+		cfg:     cfg,
+		element: element,
 	}, nil
+}
+
+func (g *gauge) getElement() grid.Element {
+	return g.element
 }
 
 func (g *gauge) GetWidgetCfg() model.Widget {
@@ -33,13 +49,13 @@ func (g *gauge) GetWidgetCfg() model.Widget {
 func (g *gauge) Sync(isPercent bool, value float64) error {
 	var err error
 	if isPercent {
-		err = g.Donut.Percent(int(value))
+		err = g.widget.Percent(int(value))
 	} else {
 		max := float64(g.cfg.Gauge.Max)
 		if max < value {
 			max = value
 		}
-		err = g.Donut.Absolute(int(value), int(max))
+		err = g.widget.Absolute(int(value), int(max))
 	}
 
 	if err != nil {
@@ -62,7 +78,7 @@ func (g *gauge) SetColor(hexColor string) error {
 	}
 
 	// Replace the instance.
-	g.Donut = d
+	g.widget = d
 
 	return nil
 }
