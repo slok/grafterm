@@ -15,16 +15,6 @@ const (
 	graphPointQuantityRetries = 5
 )
 
-var (
-	defColors = []string{
-		"#7EB26D",
-		"#EAB839",
-		"#6ED0E0",
-		"#EF843C",
-		"#E24D42",
-	}
-)
-
 // graph is a widget that represents values in a two axis graph.
 type graph struct {
 	controller     controller.Controller
