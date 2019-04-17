@@ -108,6 +108,70 @@ func TestGraphWidget(t *testing.T) {
 			},
 		},
 		{
+			name: "A graph with all data points and custom legend should render all values with the correct legend.",
+			appCfg: view.AppConfig{
+				RefreshInterval: 1 * time.Second,
+				TimeRangeEnd:    t1,
+				TimeRangeStart:  t1Minus100m,
+			},
+			cfg: model.Widget{
+				WidgetSource: model.WidgetSource{
+					Graph: &model.GraphWidgetSource{
+						Queries: []model.Query{
+							model.Query{
+								Legend: "{{.Query.Labels.code}}-{{.Query.Labels.handler}}",
+								Expr:   "test",
+							},
+						},
+					},
+				},
+			},
+			exp: func(t *testing.T, mc *mcontroller.Controller, mg *mrender.GraphWidget) {
+				mg.On("GetGraphPointQuantity").Return(graphCapacity)
+
+				// Having all datapoints we should render all the values.
+				seriess := []model.MetricSeries{
+					model.MetricSeries{
+						ID: "test",
+						Labels: map[string]string{
+							"code":    "200",
+							"handler": "/test/route1",
+						},
+						Metrics: []model.Metric{
+							model.Metric{Value: 1, TS: t1Minus100m.Add(1 * time.Minute)},
+							model.Metric{Value: 2, TS: t1Minus100m.Add(12 * time.Minute)},
+							model.Metric{Value: 3, TS: t1Minus100m.Add(21 * time.Minute)},
+							model.Metric{Value: 4, TS: t1Minus100m.Add(39 * time.Minute)},
+							model.Metric{Value: 5, TS: t1Minus100m.Add(46 * time.Minute)},
+							model.Metric{Value: 6, TS: t1Minus100m.Add(53 * time.Minute)},
+							model.Metric{Value: 7, TS: t1Minus100m.Add(66 * time.Minute)},
+							model.Metric{Value: 8, TS: t1Minus100m.Add(71 * time.Minute)},
+							model.Metric{Value: 9, TS: t1Minus100m.Add(85 * time.Minute)},
+							model.Metric{Value: 10, TS: t1Minus100m.Add(92 * time.Minute)},
+						},
+					},
+				}
+
+				// Check it gets the step correctly.
+				expStep := 10 * time.Minute
+				mc.On("GetRangeMetrics", mock.Anything, mock.Anything, t1Minus100m, t1, expStep).Return(seriess, nil)
+
+				// Check the data for rendering is correctly calculated.
+				// Buckets index based on time (check xLabels to a fast view).
+				values := []*render.Value{rv(1), rv(2), rv(3), rv(4), rv(5), rv(6), rv(7), rv(8), rv(9), rv(10)}
+
+				series := []render.Series{
+					render.Series{
+						Label:   "200-/test/route1",
+						Color:   "#7EB26D", // First color.
+						XLabels: xLabels,
+						Values:  values,
+					},
+				}
+				mg.On("Sync", series).Return(nil)
+			},
+		},
+		{
 			name: "A graph with no data points at the begginning should ignore these first values.",
 			appCfg: view.AppConfig{
 				RefreshInterval: 1 * time.Second,

@@ -4,6 +4,7 @@
 
 ### Added
 
+- Templated legends on graph widget.
 - Legend on graph widget.
 - Graph widget.
 - Single metric gather.
