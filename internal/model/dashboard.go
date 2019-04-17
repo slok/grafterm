@@ -43,6 +43,7 @@ type GaugeWidgetSource struct {
 
 // GraphWidgetSource represents a simple value widget in donut format.
 type GraphWidgetSource struct {
+	Legend  Legend  `json:"legend,omitempty"`
 	Queries []Query `json:"queries,omitempty"`
 }
 
@@ -58,4 +59,10 @@ type Query struct {
 type Threshold struct {
 	StartValue float64 `json:"startValue"`
 	Color      string  `json:"color"`
+}
+
+// Legend controls the legend of a widget.
+type Legend struct {
+	Disable   bool `json:"disable,omitempty"`
+	RightSide bool `json:"rightSide,omitempty"`
 }

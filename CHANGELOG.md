@@ -4,6 +4,7 @@
 
 ### Added
 
+- Legend on graph widget.
 - Graph widget.
 - Single metric gather.
 - Metric range gather.
