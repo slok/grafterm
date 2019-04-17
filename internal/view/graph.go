@@ -9,6 +9,7 @@ import (
 	"github.com/slok/meterm/internal/model"
 	"github.com/slok/meterm/internal/service/log"
 	"github.com/slok/meterm/internal/view/render"
+	"github.com/slok/meterm/internal/view/template"
 )
 
 const (
@@ -33,6 +34,13 @@ func newGraph(controller controller.Controller, rendererWidget render.GraphWidge
 		widgetCfg:      wcfg,
 		logger:         logger,
 	}
+}
+
+// metricSeries is a helper type that has the metric series and the query
+// that has been used to get them.
+type metricSeries struct {
+	query  model.Query
+	series model.MetricSeries
 }
 
 func (g *graph) sync(ctx context.Context, cfg syncConfig) error {
@@ -60,44 +68,43 @@ func (g *graph) sync(ctx context.Context, cfg syncConfig) error {
 	start := cfg.timeRangeStart
 	end := cfg.timeRangeEnd
 	step := end.Sub(start) / time.Duration(cap)
-	allSeries := [][]model.MetricSeries{}
+	allSeries := []metricSeries{}
 	for _, q := range g.widgetCfg.Graph.Queries {
 		//TODO(slok): concurrent queries.
 		series, err := g.controller.GetRangeMetrics(ctx, q, start, end, step)
 		if err != nil {
 			return err
 		}
-		allSeries = append(allSeries, series)
+
+		// Append all received series.
+		for _, serie := range series {
+			ms := metricSeries{
+				query:  q,
+				series: serie,
+			}
+			allSeries = append(allSeries, ms)
+		}
 	}
 
 	// Merge sort all series.
-	metrics := g.mergeAndSortSeries(allSeries...)
+	metrics := g.sortSeries(allSeries)
 
 	// Transform metric to the ones the render part understands.
 	xLabels, indexedTime := g.createIndexedSlices(start, step, cap)
-	series := g.transformMetrics(metrics, xLabels, indexedTime)
+	series := g.transformToRenderable(cfg, metrics, xLabels, indexedTime)
 
 	// Update the render view value.
 	g.rendererWidget.Sync(series)
 	return nil
 }
 
-func (g *graph) mergeAndSortSeries(allseries ...[]model.MetricSeries) []model.MetricSeries {
-	res := []model.MetricSeries{}
-
-	// Merge.
-	for _, series := range allseries {
-		for _, serie := range series {
-			res = append(res, serie)
-		}
-	}
-
+func (g *graph) sortSeries(allseries []metricSeries) []metricSeries {
 	// Sort.
-	sort.Slice(res, func(i, j int) bool {
-		return res[i].ID < res[j].ID
+	sort.Slice(allseries, func(i, j int) bool {
+		return allseries[i].series.ID < allseries[j].series.ID
 	})
 
-	return res
+	return allseries
 }
 
 // createIndexedSlices will create the slices required create a render.Series based on these slices
@@ -116,14 +123,19 @@ func (g *graph) createIndexedSlices(start time.Time, step time.Duration, capacit
 	return xLabels, indexedTime
 }
 
-func (g *graph) transformMetrics(series []model.MetricSeries, xLabels []string, indexedTime []time.Time) []render.Series {
+func (g *graph) transformToRenderable(cfg syncConfig, series []metricSeries, xLabels []string, indexedTime []time.Time) []render.Series {
 	renderSeries := []render.Series{}
 
 	// Create the different series to render.
 	for i, serie := range series {
+		// Create the template data for each series form the sync template
+		// data (upper layer template data).
+		templateData := cfg.templateData.WithQuery(template.Query{
+			DatasourceID: serie.query.DatasourceID,
+			Labels:       serie.series.Labels,
+		})
+
 		// Init data.
-		label := serie.ID
-		color := defColors[i%len(defColors)]
 		values := make([]*render.Value, len(xLabels))
 		timeIndex := 0
 		metricIndex := 0
@@ -131,13 +143,13 @@ func (g *graph) transformMetrics(series []model.MetricSeries, xLabels []string, 
 
 		// For every value/datapoint.
 		for {
-			if metricIndex >= len(serie.Metrics) ||
+			if metricIndex >= len(serie.series.Metrics) ||
 				timeIndex >= len(indexedTime) ||
 				valueIndex >= len(values) {
 				break
 			}
 
-			m := serie.Metrics[metricIndex]
+			m := serie.series.Metrics[metricIndex]
 			ts := indexedTime[timeIndex]
 
 			// If metric is before the timestamp being processed in this
@@ -166,9 +178,10 @@ func (g *graph) transformMetrics(series []model.MetricSeries, xLabels []string, 
 			timeIndex++
 		}
 
+		// Create the renderable series.
 		serie := render.Series{
-			Label:   label,
-			Color:   color,
+			Label:   g.getLegend(templateData, serie),
+			Color:   defColors[i%len(defColors)],
 			XLabels: xLabels,
 			Values:  values,
 		}
@@ -193,4 +206,17 @@ func (g *graph) getWindowCapacity() int {
 		time.Sleep(10 * time.Millisecond)
 	}
 	return cap
+}
+
+// getLegend will get the correct legend based on the query legend value.
+// if this is not set, the legend will be the ID of the metric series,
+// if set it will tru rendering the template using the template data.
+func (g *graph) getLegend(templateData template.Data, series metricSeries) string {
+	// If no special legend then render with the ID.
+	if series.query.Legend == "" {
+		return series.series.ID
+	}
+
+	// Template the legend.
+	return templateData.Render(series.query.Legend)
 }

@@ -49,7 +49,9 @@ type GraphWidgetSource struct {
 
 // Query is the query that will be made to the datasource.
 type Query struct {
-	Expr         string `json:"expr,omitempty"`
+	Expr string `json:"expr,omitempty"`
+	// Legend accepts `text.template` format.
+	Legend       string `json:"legend,omitempty"`
 	DatasourceID string `json:"datasourceID,omitempty"`
 }
 

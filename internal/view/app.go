@@ -3,6 +3,7 @@ package view
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/slok/meterm/internal/model"
 	"github.com/slok/meterm/internal/service/log"
 	"github.com/slok/meterm/internal/view/render"
+	"github.com/slok/meterm/internal/view/template"
 )
 
 var (
@@ -162,6 +164,13 @@ func (a *App) getSyncConfig() syncConfig {
 
 	if cfg.timeRangeStart.IsZero() {
 		cfg.timeRangeStart = cfg.timeRangeEnd.Add(-1 * a.cfg.RelativeTimeRange)
+	}
+
+	// Create the template data for each sync.
+	cfg.templateData = template.Data{
+		Dashboard: template.Dashboard{
+			Range: fmt.Sprintf("%v", a.cfg.RelativeTimeRange),
+		},
 	}
 
 	return cfg
