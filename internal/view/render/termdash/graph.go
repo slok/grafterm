@@ -22,6 +22,7 @@ const (
 	graphVerticalPerc     = 90
 	legendVerticalPerc    = 4
 	paddingVerticalPerc   = 20
+	legendCharacter       = `⠤⠤`
 )
 
 // graph satisfies render.GraphWidget interface.
@@ -188,10 +189,10 @@ func (g *graph) syncLegend(series render.Series, color cell.Color) error {
 		return nil
 	// To the right.
 	case g.cfg.Graph.Legend.RightSide:
-		legend = fmt.Sprintf("•%s\n", series.Label)
+		legend = fmt.Sprintf("%s %s\n", legendCharacter, series.Label)
 	// At the bottom.
 	default:
-		legend = fmt.Sprintf("•%s  ", series.Label)
+		legend = fmt.Sprintf("%s %s  ", legendCharacter, series.Label)
 	}
 
 	// Write the legend on the widget.
