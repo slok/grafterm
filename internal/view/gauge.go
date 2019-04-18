@@ -98,7 +98,7 @@ func (g *gauge) changeWidgetColor(val float64) error {
 		return nil
 	}
 
-	color, err := getThresholdColor(g.cfg.Gauge.Thresholds, val)
+	color, err := widgetColorManager{}.GetColorFromThresholds(g.cfg.Gauge.Thresholds, val)
 	if err != nil {
 		return fmt.Errorf("error getting threshold color: %s", err)
 	}
