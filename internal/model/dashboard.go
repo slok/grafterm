@@ -1,5 +1,7 @@
 package model
 
+import "regexp"
+
 // Dashboard represents a dashboard.
 type Dashboard struct {
 	Rows []Row `json:"rows,omitempty"`
@@ -43,8 +45,8 @@ type GaugeWidgetSource struct {
 
 // GraphWidgetSource represents a simple value widget in donut format.
 type GraphWidgetSource struct {
-	Legend  Legend  `json:"legend,omitempty"`
-	Queries []Query `json:"queries,omitempty"`
+	Queries       []Query            `json:"queries,omitempty"`
+	Visualization GraphVisualization `json:"visualization,omitempty"`
 }
 
 // Query is the query that will be made to the datasource.
@@ -61,6 +63,21 @@ type Query struct {
 type Threshold struct {
 	StartValue float64 `json:"startValue"`
 	Color      string  `json:"color"`
+}
+
+// GraphVisualization controls how the graph will visualize
+// lines, colors, legend...
+type GraphVisualization struct {
+	SeriesOverride []SeriesOverride `json:"seriesOverride,omitempty"`
+	Legend         Legend           `json:"legend,omitempty"`
+}
+
+// SeriesOverride will override visualization based on
+// the regex legend.
+type SeriesOverride struct {
+	Regex         string `json:"regex,omitempty"`
+	CompiledRegex *regexp.Regexp
+	Color         string `json:"color,omitempty"`
 }
 
 // Legend controls the legend of a widget.

@@ -126,8 +126,10 @@ func (g *graph) createIndexedSlices(start time.Time, step time.Duration, capacit
 func (g *graph) transformToRenderable(cfg syncConfig, series []metricSeries, xLabels []string, indexedTime []time.Time) []render.Series {
 	renderSeries := []render.Series{}
 
+	var colorman widgetColorManager
+
 	// Create the different series to render.
-	for i, serie := range series {
+	for _, serie := range series {
 		// Create the template data for each series form the sync template
 		// data (upper layer template data).
 		templateData := cfg.templateData.WithQuery(template.Query{
@@ -179,9 +181,10 @@ func (g *graph) transformToRenderable(cfg syncConfig, series []metricSeries, xLa
 		}
 
 		// Create the renderable series.
+		legend := g.getLegend(templateData, serie)
 		serie := render.Series{
-			Label:   g.getLegend(templateData, serie),
-			Color:   defColors[i%len(defColors)],
+			Label:   legend,
+			Color:   colorman.GetColorFromSeriesLegend(*g.widgetCfg.Graph, legend),
 			XLabels: xLabels,
 			Values:  values,
 		}

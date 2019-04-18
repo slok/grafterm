@@ -21,7 +21,7 @@ const (
 	paddingHorizontalPerc = 10
 	graphVerticalPerc     = 90
 	legendVerticalPerc    = 4
-	paddingVerticalPerc   = 20
+	paddingVerticalPerc   = 50
 	legendCharacter       = `⠤⠤`
 )
 
@@ -50,7 +50,7 @@ func newGraph(cfg model.Widget) (*graph, error) {
 	// If we don't need a legend then use only the graph.
 	var element grid.Element
 	var txt *text.Text
-	if !cfg.Graph.Legend.Disable {
+	if !cfg.Graph.Visualization.Legend.Disable {
 		txt, err = text.New(text.WrapAtRunes())
 		if err != nil {
 			return nil, err
@@ -73,12 +73,12 @@ func elementFromGraphAndLegend(cfg model.Widget, graph *linechart.LineChart, leg
 	elements := []grid.Element{}
 	switch {
 	// Disabled (no legend element).
-	case cfg.Graph.Legend.Disable:
+	case cfg.Graph.Visualization.Legend.Disable:
 		elements = []grid.Element{
 			grid.ColWidthPerc(fullPerc, graphElement),
 		}
 	// To the right(elements composed by columns).
-	case cfg.Graph.Legend.RightSide:
+	case cfg.Graph.Visualization.Legend.RightSide:
 		legendElement := grid.ColWidthPercWithOpts(
 			fullPerc,
 			[]container.Option{container.PaddingLeftPercent(paddingHorizontalPerc)},
@@ -120,7 +120,7 @@ func (g *graph) GetWidgetCfg() model.Widget {
 
 func (g *graph) Sync(series []render.Series) error {
 	// Reset legend on each sync.
-	if !g.cfg.Graph.Legend.Disable {
+	if !g.cfg.Graph.Visualization.Legend.Disable {
 		g.widgetLegend.Reset()
 	}
 
@@ -185,10 +185,10 @@ func (g *graph) syncLegend(series render.Series, color cell.Color) error {
 	legend := ""
 	switch {
 	// Disabled.
-	case g.cfg.Graph.Legend.Disable:
+	case g.cfg.Graph.Visualization.Legend.Disable:
 		return nil
 	// To the right.
-	case g.cfg.Graph.Legend.RightSide:
+	case g.cfg.Graph.Visualization.Legend.RightSide:
 		legend = fmt.Sprintf("%s %s\n", legendCharacter, series.Label)
 	// At the bottom.
 	default:

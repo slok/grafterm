@@ -7,7 +7,7 @@ import (
 	"github.com/slok/meterm/internal/model"
 )
 
-// Default colors got Grafana.
+// Default colors got from Grafana.
 // Check: https://github.com/grafana/grafana/blob/406ef962fc113091bb7229c8f3f0090d63c8392e/packages/grafana-ui/src/utils/colors.ts#L16
 var defColors = []string{
 	"#7EB26D", // 0: pale green
@@ -68,24 +68,6 @@ var defColors = []string{
 	"#DEDAF7",
 }
 
-// getThresholdColor gets the correct color based on a ordered list of thresholds
-// and a value.
-func getThresholdColor(thresholds []model.Threshold, value float64) (hexColor string, err error) {
-	if len(thresholds) == 0 {
-		return "", fmt.Errorf("the number of thresholds can't be 0")
-	}
-
-	// Search the correct color.
-	threshold := thresholds[0]
-	for _, t := range thresholds[1:] {
-		if value >= t.StartValue {
-			threshold = t
-		}
-	}
-
-	return threshold.Color, nil
-}
-
 type syncingFlag struct {
 	syncing bool
 	mu      sync.Mutex
@@ -111,4 +93,59 @@ func (s *syncingFlag) Get() bool {
 	defer s.mu.Unlock()
 
 	return s.syncing
+}
+
+// widgetColorManager manages the color selection for widgets.
+// it knows to get default color, based on series legend...
+// The color selector tracks the number of default colors returned
+// so it doesn't repeat default colors.
+type widgetColorManager struct {
+	count int
+}
+
+// GetColorFromSeriesLegend will return the configured color for the matching regex with the series
+// legend, if there is no match then it will return a default color.
+func (w *widgetColorManager) GetColorFromSeriesLegend(cfg model.GraphWidgetSource, legend string) string {
+	// Check if it matches the regex of any of the visualization
+	// override series for a custom color.
+	for _, so := range cfg.Visualization.SeriesOverride {
+		if so.CompiledRegex != nil && so.CompiledRegex.MatchString(legend) && so.Color != "" {
+			return so.Color
+		}
+	}
+
+	// No match, get the next default color,
+	color := w.GetDefaultColor()
+
+	return color
+}
+
+// GetColorFromThresholds gets the correct color based on a ordered list of thresholds and a value.
+func (w widgetColorManager) GetColorFromThresholds(thresholds []model.Threshold, value float64) (hexColor string, err error) {
+	if len(thresholds) == 0 {
+		return "", fmt.Errorf("the number of thresholds can't be 0")
+	}
+
+	// Search the correct color.
+	threshold := thresholds[0]
+	for _, t := range thresholds[1:] {
+		if value >= t.StartValue {
+			threshold = t
+		}
+	}
+
+	return threshold.Color, nil
+}
+
+// GetDefaultColor returns a default color, for each returned default color the manager
+// will track how many default colors have been returned so it doesn't repeat until all
+// the default color list has been used and it starts again from the first default color.
+func (w *widgetColorManager) GetDefaultColor() string {
+	color := defColors[w.count]
+	w.count++
+	if w.count >= len(defColors) {
+		w.count = 0
+	}
+
+	return color
 }

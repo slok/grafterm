@@ -74,7 +74,7 @@ func (s *singlestat) changeWidgetColor(val float64) error {
 		return nil
 	}
 
-	color, err := getThresholdColor(s.cfg.Singlestat.Thresholds, val)
+	color, err := widgetColorManager{}.GetColorFromThresholds(s.cfg.Singlestat.Thresholds, val)
 	if err != nil {
 		return fmt.Errorf("error getting threshold color: %s", err)
 	}
