@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/slok/meterm/internal/model"
@@ -25,12 +26,26 @@ type Configuration struct {
 	Dashboard   Dashboard    `json:"dashboard,omitempty"`
 }
 
-// Validate will validate the configuration.
+// Validate will validate and autocomplete the configuration.
 func (c *Configuration) Validate() error {
 	if strings.ToLower(c.Meta.Version) != v1Version {
 		return fmt.Errorf("not a valid version for V1 configuration: %s", c.Meta.Version)
 	}
 
+	err := c.validateDatasources()
+	if err != nil {
+		return err
+	}
+
+	err = c.validateDashboard()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Configuration) validateDatasources() error {
 	// Check there are multiple datasources with the same ID.
 	dss := map[string]struct{}{}
 	for _, ds := range c.Datasources {
@@ -40,6 +55,30 @@ func (c *Configuration) Validate() error {
 		}
 		dss[ds.ID] = struct{}{}
 	}
+
+	return nil
+}
+
+func (c *Configuration) validateDashboard() error {
+	// Check dashboard.
+	for _, row := range c.Dashboard.Rows {
+		for _, widget := range row.Widgets {
+			switch {
+			// Check graphs.
+			case widget.Graph != nil:
+				for i, seriesOverride := range widget.Graph.Visualization.SeriesOverride {
+					// Compile color regexes on override series.
+					re, err := regexp.Compile(seriesOverride.Regex)
+					if err != nil {
+						return err
+					}
+					seriesOverride.CompiledRegex = re
+					widget.Graph.Visualization.SeriesOverride[i] = seriesOverride
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
