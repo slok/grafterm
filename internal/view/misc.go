@@ -103,24 +103,24 @@ type widgetColorManager struct {
 	count int
 }
 
+// GetColorFromSeriesLegend will return the configured color for the matching regex with the series
+// legend, if there is no match then it will return a default color.
 func (w *widgetColorManager) GetColorFromSeriesLegend(cfg model.GraphWidgetSource, legend string) string {
-
 	// Check if it matches the regex of any of the visualization
 	// override series for a custom color.
 	for _, so := range cfg.Visualization.SeriesOverride {
-		if so.CompiledRegex != nil && so.CompiledRegex.MatchString(legend) {
+		if so.CompiledRegex != nil && so.CompiledRegex.MatchString(legend) && so.Color != "" {
 			return so.Color
 		}
 	}
 
 	// No match, get the next default color,
-	color := w.getColor()
+	color := w.GetDefaultColor()
 
 	return color
 }
 
-// GetColorFromThresholds gets the correct color based on a ordered list of thresholds
-// and a value.
+// GetColorFromThresholds gets the correct color based on a ordered list of thresholds and a value.
 func (w widgetColorManager) GetColorFromThresholds(thresholds []model.Threshold, value float64) (hexColor string, err error) {
 	if len(thresholds) == 0 {
 		return "", fmt.Errorf("the number of thresholds can't be 0")
@@ -137,7 +137,10 @@ func (w widgetColorManager) GetColorFromThresholds(thresholds []model.Threshold,
 	return threshold.Color, nil
 }
 
-func (w *widgetColorManager) getColor() string {
+// GetDefaultColor returns a default color, for each returned default color the manager
+// will track how many default colors have been returned so it doesn't repeat until all
+// the default color list has been used and it starts again from the first default color.
+func (w *widgetColorManager) GetDefaultColor() string {
 	color := defColors[w.count]
 	w.count++
 	if w.count >= len(defColors) {

@@ -18,10 +18,10 @@ func TestWidgetColorManager(t *testing.T) {
 		{
 			name: "Get default colors in order.",
 			getColor: func(wcm widgetColorManager) (string, error) {
-				wcm.getColor()
-				wcm.getColor()
-				wcm.getColor()
-				return wcm.getColor(), nil
+				wcm.GetDefaultColor()
+				wcm.GetDefaultColor()
+				wcm.GetDefaultColor()
+				return wcm.GetDefaultColor(), nil
 			},
 			expColor: "#EF843C",
 		},

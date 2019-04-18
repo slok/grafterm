@@ -4,6 +4,7 @@
 
 ### Added
 
+- Color override on graph series based on legend regex.
 - Templated legends on graph widget.
 - Legend on graph widget.
 - Graph widget.
