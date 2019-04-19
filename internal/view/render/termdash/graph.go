@@ -2,6 +2,7 @@ package termdash
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/mum4k/termdash/cell"
 	"github.com/mum4k/termdash/container"
@@ -159,10 +160,8 @@ func (g *graph) syncGraph(series render.Series, color cell.Color) error {
 	// Convert to float64 values.
 	values := make([]float64, len(series.Values))
 	for i, value := range series.Values {
-		// Termdash  doesn't support no values.
-		// for now no values will be 0.
-		// TODO(slok): Track the issue https://github.com/mum4k/termdash/issues/184
-		v := 0.0
+		// Use NaN as no value for Termdash.
+		v := math.NaN()
 		if value != nil {
 			v = float64(*value)
 		}
