@@ -4,6 +4,7 @@
 
 ### Added
 
+- Dynamic X-axis time labels based on time range and steps.
 - Templated queries using variables.
 - Const and autointerval variables.
 - Color override on graph series based on legend regex.
