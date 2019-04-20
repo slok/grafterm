@@ -119,3 +119,51 @@ func TestDurationToSimpleString(t *testing.T) {
 		})
 	}
 }
+
+func TestSteppedTimeRangeStringFormat(t *testing.T) {
+	tests := []struct {
+		name      string
+		timeRange time.Duration
+		steps     int
+		exp       string
+	}{
+		{
+			name:      "Month based ranges should have the day and month.",
+			timeRange: 38 * 24 * time.Hour,
+			exp:       "01/02",
+		},
+		{
+			name:      "More than a half of a month ranges should have the day and month.",
+			timeRange: 16 * 24 * time.Hour,
+			exp:       "01/02",
+		},
+		{
+			name:      "More than one day ranges should have day and time.",
+			timeRange: 72 * time.Hour,
+			exp:       "01/02 15:04",
+		},
+		{
+			name:      "Less than a minute ranges should have seconds.",
+			timeRange: 48 * time.Second,
+			exp:       "15:04:05",
+		},
+		{
+			name:      "less than one day based ranges with few steps don't have seconds.",
+			timeRange: 2 * time.Hour,
+			steps:     50,
+			exp:       "15:04",
+		},
+		{
+			name:      "less than one day based ranges with few steps don't have seconds.",
+			timeRange: 15 * time.Minute,
+			steps:     200,
+			exp:       "15:04:05",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := unit.TimeRangeTimeStringFormat(test.timeRange, test.steps)
+			assert.Equal(t, test.exp, got)
+		})
+	}
+}

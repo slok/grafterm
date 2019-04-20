@@ -8,6 +8,7 @@ import (
 	"github.com/slok/meterm/internal/controller"
 	"github.com/slok/meterm/internal/model"
 	"github.com/slok/meterm/internal/service/log"
+	"github.com/slok/meterm/internal/service/unit"
 	"github.com/slok/meterm/internal/view/render"
 	"github.com/slok/meterm/internal/view/template"
 )
@@ -92,7 +93,7 @@ func (g *graph) sync(ctx context.Context, cfg syncConfig) error {
 	metrics := g.sortSeries(allSeries)
 
 	// Transform metric to the ones the render part understands.
-	xLabels, indexedTime := g.createIndexedSlices(start, step, cap)
+	xLabels, indexedTime := g.createIndexedSlices(start, end, step, cap)
 	series := g.transformToRenderable(cfg, metrics, xLabels, indexedTime)
 
 	// Update the render view value.
@@ -110,12 +111,12 @@ func (g *graph) sortSeries(allseries []metricSeries) []metricSeries {
 }
 
 // createIndexedSlices will create the slices required create a render.Series based on these slices
-func (g *graph) createIndexedSlices(start time.Time, step time.Duration, capacity int) (xLabels []string, indexedTime []time.Time) {
+func (g *graph) createIndexedSlices(start, end time.Time, step time.Duration, capacity int) (xLabels []string, indexedTime []time.Time) {
 	xLabels = make([]string, capacity)
 	indexedTime = make([]time.Time, capacity)
 
 	// TODO(slok): Calculate the best time format.
-	format := "15:04:05"
+	format := unit.TimeRangeTimeStringFormat(end.Sub(start), capacity)
 	for i := 0; i < capacity; i++ {
 		t := start.Add(time.Duration(i) * step)
 		xLabels[i] = t.Format(format)

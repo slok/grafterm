@@ -26,7 +26,7 @@ func TestGraphWidget(t *testing.T) {
 	// Common precalculated data that should be expected.
 	t1, _ := time.Parse(time.RFC3339, "2019-04-13T09:30:00+00:00")
 	t1Minus100m := t1.Add(-100 * time.Minute)
-	xLabels := []string{"07:50:00", "08:00:00", "08:10:00", "08:20:00", "08:30:00", "08:40:00", "08:50:00", "09:00:00", "09:10:00", "09:20:00"}
+	xLabels := []string{"07:50", "08:00", "08:10", "08:20", "08:30", "08:40", "08:50", "09:00", "09:10", "09:20"}
 	graphCapacity := 10
 
 	tests := []struct {
