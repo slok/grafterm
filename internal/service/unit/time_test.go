@@ -22,6 +22,12 @@ func TestNearestDurationFromSteps(t *testing.T) {
 			expDur:    30 * time.Second,
 		},
 		{
+			name:      "Greater that the first available interval but not greater than the second one.",
+			timeRange: 31 * time.Second,
+			steps:     1,
+			expDur:    30 * time.Second,
+		},
+		{
 			name:      "A high range with few steps should return the max interval",
 			timeRange: 5000 * time.Hour,
 			steps:     2,

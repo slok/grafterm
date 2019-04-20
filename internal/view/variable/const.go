@@ -14,11 +14,6 @@ func (c ConstVariabler) Scope() Scope {
 	return ScopeDashboard
 }
 
-// IsMulti Satisfies Variabler interface.
-func (c ConstVariabler) IsMulti() bool {
-	return false
-}
-
 // IsRepeatable Satisfies Variabler interface.
 func (c ConstVariabler) IsRepeatable() bool {
 	return false

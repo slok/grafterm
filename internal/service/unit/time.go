@@ -42,14 +42,14 @@ func getNearestDuration(intervals []time.Duration, timeRange time.Duration) time
 	var bottom, top time.Duration
 
 	// Get the top and bottom limits in the range.
-	for _, limit := range intervals {
-		if limit <= timeRange {
-			bottom = limit
-			continue
+	bottom = intervals[0]
+	for _, limit := range intervals[1:] {
+		if limit > timeRange {
+			top = limit
+			break
 		}
 
-		top = limit
-		break
+		bottom = limit
 	}
 
 	// Get distance from both and return the shortest one.
