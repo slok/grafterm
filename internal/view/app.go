@@ -12,11 +12,7 @@ import (
 	"github.com/slok/meterm/internal/service/log"
 	"github.com/slok/meterm/internal/view/render"
 	"github.com/slok/meterm/internal/view/template"
-)
-
-var (
-	defRelativeTimeRange = 1 * time.Hour
-	defRefreshInterval   = 10 * time.Second
+	"github.com/slok/meterm/internal/view/variable"
 )
 
 // AppConfig are the options to run the app.
@@ -29,6 +25,11 @@ type AppConfig struct {
 }
 
 func (a *AppConfig) defaults() {
+	const (
+		defRelativeTimeRange = 1 * time.Hour
+		defRefreshInterval   = 10 * time.Second
+	)
+
 	if a.RefreshInterval == 0 {
 		a.RefreshInterval = defRefreshInterval
 	}
@@ -44,6 +45,7 @@ type App struct {
 	logger     log.Logger
 	widgets    []widget
 	cfg        AppConfig
+	variablers map[string]variable.Variabler
 
 	running bool
 	mu      sync.Mutex
@@ -68,6 +70,16 @@ func (a *App) Run(ctx context.Context, dashboard model.Dashboard) error {
 	if a.running {
 		return errors.New("already running")
 	}
+
+	// Create variablers.
+	vs, err := variable.NewVariablers(variable.FactoryConfig{
+		TimeRange: a.cfg.RelativeTimeRange,
+		Dashboard: dashboard,
+	})
+	if err != nil {
+		return err
+	}
+	a.variablers = vs
 
 	a.running = true
 	// TODO(slok): Think if we should set running to false, for now we
@@ -130,6 +142,9 @@ func (a *App) syncWidgets() {
 func (a *App) createWidgets(rws []render.Widget) []widget {
 	widgets := []widget{}
 
+	// Dashboard static data for templating.
+	dashboardData := a.getDashboardVariableData()
+
 	// Create app widgets based on the render view widgets.
 	for _, rw := range rws {
 		var w widget
@@ -145,6 +160,9 @@ func (a *App) createWidgets(rws []render.Widget) []widget {
 		default:
 			continue
 		}
+
+		// Widget middlewares.
+		w = withWidgetDataMiddleware(dashboardData, w) // Assign static data to widget.
 
 		widgets = append(widgets, w)
 	}
@@ -167,11 +185,41 @@ func (a *App) getSyncConfig() syncConfig {
 	}
 
 	// Create the template data for each sync.
-	cfg.templateData = template.Data{
-		Dashboard: template.Dashboard{
-			Range: fmt.Sprintf("%v", a.cfg.RelativeTimeRange),
-		},
-	}
+	cfg.templateData = a.getSyncVariableData(cfg)
 
 	return cfg
+}
+
+func (a *App) getDashboardVariableData() template.Data {
+	data := template.Data(map[string]string{
+		"__range:":          fmt.Sprintf("%v", a.cfg.RelativeTimeRange),
+		"__refresInterval:": fmt.Sprintf("%v", a.cfg.RefreshInterval),
+	})
+
+	// Load variablers data from the dashboard scope.
+	dashboardData := map[string]string{}
+	for vid, v := range a.variablers {
+		if v.Scope() == variable.ScopeDashboard {
+			dashboardData[vid] = v.GetValue()
+		}
+	}
+
+	// Merge them.
+	data = data.WithData(dashboardData)
+	return data
+}
+
+func (a *App) getSyncVariableData(cfg syncConfig) template.Data {
+	data := map[string]string{
+		"__start": fmt.Sprintf("%v", cfg.timeRangeStart),
+		"__end":   fmt.Sprintf("%v", cfg.timeRangeEnd),
+	}
+
+	for vid, v := range a.variablers {
+		if v.Scope() == variable.ScopeSync {
+			data[vid] = v.GetValue()
+		}
+	}
+
+	return data
 }

@@ -71,7 +71,9 @@ func (g *graph) sync(ctx context.Context, cfg syncConfig) error {
 	allSeries := []metricSeries{}
 	for _, q := range g.widgetCfg.Graph.Queries {
 		//TODO(slok): concurrent queries.
-		series, err := g.controller.GetRangeMetrics(ctx, q, start, end, step)
+		templatedQ := q
+		templatedQ.Expr = cfg.templateData.Render(q.Expr)
+		series, err := g.controller.GetRangeMetrics(ctx, templatedQ, start, end, step)
 		if err != nil {
 			return err
 		}
@@ -132,10 +134,7 @@ func (g *graph) transformToRenderable(cfg syncConfig, series []metricSeries, xLa
 	for _, serie := range series {
 		// Create the template data for each series form the sync template
 		// data (upper layer template data).
-		templateData := cfg.templateData.WithQuery(template.Query{
-			DatasourceID: serie.query.DatasourceID,
-			Labels:       serie.series.Labels,
-		})
+		templateData := cfg.templateData.WithData(serie.series.Labels)
 
 		// Init data.
 		values := make([]*render.Value, len(xLabels))

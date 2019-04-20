@@ -4,6 +4,8 @@
 
 ### Added
 
+- Templated queries using variables.
+- Const and autointerval variables.
 - Color override on graph series based on legend regex.
 - Templated legends on graph widget.
 - Legend on graph widget.

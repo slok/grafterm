@@ -19,8 +19,10 @@ import (
 func TestGaugeWidget(t *testing.T) {
 	tests := []struct {
 		name             string
+		dashboard        model.Dashboard
 		cfg              model.Widget
 		controllerMetric *model.Metric
+		expQuery         model.Query
 		exp              func(*mrender.GaugeWidget)
 		expErr           bool
 	}{
@@ -33,6 +35,39 @@ func TestGaugeWidget(t *testing.T) {
 				WidgetSource: model.WidgetSource{
 					Gauge: &model.GaugeWidgetSource{},
 				},
+			},
+			exp: func(mc *mrender.GaugeWidget) {
+				mc.On("Sync", false, float64(19)).Return(nil)
+			},
+		},
+		{
+			name: "A gauge should make templated queries.",
+			controllerMetric: &model.Metric{
+				Value: 19,
+			},
+			dashboard: model.Dashboard{
+				Variables: []model.Variable{
+					model.Variable{
+						Name: "testInterval",
+						VariableSource: model.VariableSource{
+							Constant: &model.ConstantVariableSource{
+								Value: "10m",
+							},
+						},
+					},
+				},
+			},
+			cfg: model.Widget{
+				WidgetSource: model.WidgetSource{
+					Gauge: &model.GaugeWidgetSource{
+						Query: model.Query{
+							Expr: "this_is_a_test[{{ .testInterval }}]",
+						},
+					},
+				},
+			},
+			expQuery: model.Query{
+				Expr: "this_is_a_test[10m]",
 			},
 			exp: func(mc *mrender.GaugeWidget) {
 				mc.On("Sync", false, float64(19)).Return(nil)
@@ -106,7 +141,7 @@ func TestGaugeWidget(t *testing.T) {
 			test.exp(mgauge)
 
 			mc := &mcontroller.Controller{}
-			mc.On("GetSingleInstantMetric", mock.Anything, test.cfg.Gauge.Query).Return(test.controllerMetric, nil)
+			mc.On("GetSingleInstantMetric", mock.Anything, test.expQuery).Return(test.controllerMetric, nil)
 			mr := &mrender.Renderer{}
 			mr.On("LoadDashboard", mock.Anything, mock.Anything).Once().Return([]render.Widget{mgauge}, nil)
 
@@ -116,7 +151,7 @@ func TestGaugeWidget(t *testing.T) {
 				app := view.NewApp(view.AppConfig{
 					RefreshInterval: 1 * time.Second,
 				}, mc, mr, log.Dummy)
-				err = app.Run(ctx, model.Dashboard{})
+				err = app.Run(ctx, test.dashboard)
 			}()
 
 			// Give time to sync.

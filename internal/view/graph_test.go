@@ -30,11 +30,12 @@ func TestGraphWidget(t *testing.T) {
 	graphCapacity := 10
 
 	tests := []struct {
-		name   string
-		appCfg view.AppConfig
-		cfg    model.Widget
-		exp    func(*testing.T, *mcontroller.Controller, *mrender.GraphWidget)
-		expErr bool
+		name      string
+		dashboard model.Dashboard // Sets the dashboar configuration other that the force widget CFG on (widget cfg).
+		appCfg    view.AppConfig
+		cfg       model.Widget
+		exp       func(*testing.T, *mcontroller.Controller, *mrender.GraphWidget)
+		expErr    bool
 	}{
 		{
 			name: "A graph without without capacity on the terminal should no render anything.",
@@ -51,7 +52,19 @@ func TestGraphWidget(t *testing.T) {
 			},
 		},
 		{
-			name: "A graph with all data points should render all values.",
+			name: "A graph with all data points should render all values (and using templated query should template the query).",
+			dashboard: model.Dashboard{
+				Variables: []model.Variable{
+					model.Variable{
+						Name: "testInterval",
+						VariableSource: model.VariableSource{
+							Constant: &model.ConstantVariableSource{
+								Value: "10m",
+							},
+						},
+					},
+				},
+			},
 			appCfg: view.AppConfig{
 				RefreshInterval: 1 * time.Second,
 				TimeRangeEnd:    t1,
@@ -61,7 +74,7 @@ func TestGraphWidget(t *testing.T) {
 				WidgetSource: model.WidgetSource{
 					Graph: &model.GraphWidgetSource{
 						Queries: []model.Query{
-							model.Query{Expr: "test"},
+							model.Query{Expr: "this_is_a_test[{{ .testInterval }}]"},
 						},
 					},
 				},
@@ -90,7 +103,8 @@ func TestGraphWidget(t *testing.T) {
 
 				// Check it gets the step correctly.
 				expStep := 10 * time.Minute
-				mc.On("GetRangeMetrics", mock.Anything, mock.Anything, t1Minus100m, t1, expStep).Return(seriess, nil)
+				expQuery := model.Query{Expr: "this_is_a_test[10m]"}
+				mc.On("GetRangeMetrics", mock.Anything, expQuery, t1Minus100m, t1, expStep).Return(seriess, nil)
 
 				// Check the data for rendering is correctly calculated.
 				// Buckets index based on time (check xLabels to a fast view).
@@ -119,7 +133,7 @@ func TestGraphWidget(t *testing.T) {
 					Graph: &model.GraphWidgetSource{
 						Queries: []model.Query{
 							model.Query{
-								Legend: "{{.Query.Labels.code}}-{{.Query.Labels.handler}}",
+								Legend: "{{.code}}-{{.handler}}",
 								Expr:   "test",
 							},
 						},
@@ -344,7 +358,7 @@ func TestGraphWidget(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			go func() {
 				app := view.NewApp(test.appCfg, mc, mr, log.Dummy)
-				err = app.Run(ctx, model.Dashboard{})
+				err = app.Run(ctx, test.dashboard)
 			}()
 
 			// Give time to sync.

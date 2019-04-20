@@ -48,7 +48,9 @@ func (s *singlestat) sync(ctx context.Context, cfg syncConfig) error {
 	defer s.syncLock.Set(false)
 
 	// Gather the value.
-	m, err := s.controller.GetSingleInstantMetric(ctx, s.cfg.Singlestat.Query)
+	templatedQ := s.cfg.Singlestat.Query
+	templatedQ.Expr = cfg.templateData.Render(templatedQ.Expr)
+	m, err := s.controller.GetSingleInstantMetric(ctx, templatedQ)
 	if err != nil {
 		return fmt.Errorf("error getting single instant metric: %s", err)
 	}
