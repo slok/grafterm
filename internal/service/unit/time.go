@@ -78,3 +78,37 @@ func DurationToSimpleString(dur time.Duration) string {
 
 	return res
 }
+
+// TimeRangeTimeStringFormat returns the best visual string format for a
+// time range.
+// TODO(slok): Use better the steps to get more accurate formats.
+func TimeRangeTimeStringFormat(timeRange time.Duration, steps int) string {
+	const (
+		hourMinuteSeconds  = "15:04:05"
+		hourMinute         = "15:04"
+		monthDayHourMinute = "01/02 15:04"
+		monthDay           = "01/02"
+	)
+
+	if steps == 0 {
+		steps = 1
+	}
+
+	switch {
+	// If greater than 15 day then always return month and day.
+	case timeRange > 15*24*time.Hour:
+		return monthDay
+	// If greater than 1 day always return day and time.
+	case timeRange > 24*time.Hour:
+		return monthDayHourMinute
+	// If always less than 1 minute return with seconds.
+	case timeRange < time.Minute:
+		return hourMinuteSeconds
+	// If the minute based time has small duration steps we need to be
+	// more accurate, so we use second base notation.
+	case timeRange/time.Duration(steps) < 5*time.Second:
+		return hourMinuteSeconds
+	default:
+		return hourMinute
+	}
+}
