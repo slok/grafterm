@@ -19,8 +19,10 @@ import (
 func TestSinglestatWidget(t *testing.T) {
 	tests := []struct {
 		name             string
+		dashboard        model.Dashboard
 		cfg              model.Widget
 		controllerMetric *model.Metric
+		expQuery         model.Query
 		exp              func(*mrender.SinglestatWidget)
 		expErr           bool
 	}{
@@ -33,6 +35,39 @@ func TestSinglestatWidget(t *testing.T) {
 				WidgetSource: model.WidgetSource{
 					Singlestat: &model.SinglestatWidgetSource{},
 				},
+			},
+			exp: func(mc *mrender.SinglestatWidget) {
+				mc.On("Sync", 19.14).Return(nil)
+			},
+		},
+		{
+			name: "A singlestat should make templated queries with variables.",
+			controllerMetric: &model.Metric{
+				Value: 19.14,
+			},
+			dashboard: model.Dashboard{
+				Variables: []model.Variable{
+					model.Variable{
+						Name: "testInterval",
+						VariableSource: model.VariableSource{
+							Constant: &model.ConstantVariableSource{
+								Value: "10m",
+							},
+						},
+					},
+				},
+			},
+			cfg: model.Widget{
+				WidgetSource: model.WidgetSource{
+					Singlestat: &model.SinglestatWidgetSource{
+						Query: model.Query{
+							Expr: "this_is_a_test[{{ .testInterval }}]",
+						},
+					},
+				},
+			},
+			expQuery: model.Query{
+				Expr: "this_is_a_test[10m]",
 			},
 			exp: func(mc *mrender.SinglestatWidget) {
 				mc.On("Sync", 19.14).Return(nil)
@@ -72,7 +107,7 @@ func TestSinglestatWidget(t *testing.T) {
 			test.exp(msstat)
 
 			mc := &mcontroller.Controller{}
-			mc.On("GetSingleInstantMetric", mock.Anything, test.cfg.Singlestat.Query).Return(test.controllerMetric, nil)
+			mc.On("GetSingleInstantMetric", mock.Anything, test.expQuery).Return(test.controllerMetric, nil)
 			mr := &mrender.Renderer{}
 			mr.On("LoadDashboard", mock.Anything, mock.Anything).Once().Return([]render.Widget{msstat}, nil)
 
@@ -82,7 +117,7 @@ func TestSinglestatWidget(t *testing.T) {
 				app := view.NewApp(view.AppConfig{
 					RefreshInterval: 1 * time.Second,
 				}, mc, mr, log.Dummy)
-				err = app.Run(ctx, model.Dashboard{})
+				err = app.Run(ctx, test.dashboard)
 			}()
 
 			// Give time to sync.

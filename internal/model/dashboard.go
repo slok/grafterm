@@ -4,7 +4,31 @@ import "regexp"
 
 // Dashboard represents a dashboard.
 type Dashboard struct {
-	Rows []Row `json:"rows,omitempty"`
+	Variables []Variable `json:"variables,omitempty"`
+	Rows      []Row      `json:"rows,omitempty"`
+}
+
+// Variable is a dynamic variable that will be available through the
+// dashboard.
+type Variable struct {
+	Name           string `json:"name,omitempty"`
+	VariableSource `json:",inline"`
+}
+
+// VariableSource is the variable kind with it's data.
+type VariableSource struct {
+	Constant *ConstantVariableSource `json:"constant,omitempty"`
+	Interval *IntervalVariableSource `json:"interval,omitempty"`
+}
+
+// ConstantVariableSource represents the constant variables.
+type ConstantVariableSource struct {
+	Value string `json:"value,omitempty"`
+}
+
+// IntervalVariableSource represents the interval variables.
+type IntervalVariableSource struct {
+	Steps int `json:"steps,omitempty"`
 }
 
 // Row represents a row.

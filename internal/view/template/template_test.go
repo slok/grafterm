@@ -8,18 +8,12 @@ import (
 )
 
 func newData() template.Data {
-	return template.Data{
-		Dashboard: template.Dashboard{
-			Range: "10m",
-		},
-		Query: template.Query{
-			DatasourceID: "ds1",
-			Labels: map[string]string{
-				"code":    "401",
-				"method":  "GET",
-				"handler": "/test/:id/status",
-			},
-		},
+	return map[string]string{
+		"__interval": "2m",
+		"__range":    "10m",
+		"__start":    "2019-04-19T08:38:59+02:00",
+		"__end":      "2019-04-19T10:38:59+02:00",
+		"custom":     "test",
 	}
 }
 
@@ -31,22 +25,10 @@ func TestDataRender(t *testing.T) {
 		exp  string
 	}{
 		{
-			name: "Dashboard range",
+			name: "template data",
 			data: newData(),
-			tpl:  "range: {{ .Dashboard.Range }}",
-			exp:  "range: 10m",
-		},
-		{
-			name: "Query datasource",
-			data: newData(),
-			tpl:  "datasource: {{ .Query.DatasourceID }}",
-			exp:  "datasource: ds1",
-		},
-		{
-			name: "Query labels",
-			data: newData(),
-			tpl:  "data: [{{ .Query.Labels.method }}] {{ .Query.Labels.handler }} {{ .Query.Labels.code }}",
-			exp:  "data: [GET] /test/:id/status 401",
+			tpl:  "test: [{{ .__interval }}] {{ .custom }}",
+			exp:  "test: [2m] test",
 		},
 	}
 
@@ -67,52 +49,22 @@ func TestDataCopy(t *testing.T) {
 		expOriginal    template.Data
 	}{
 		{
-			name: "Dashboard",
+			name: "Variables",
 			data: newData(),
 			transform: func(data template.Data) template.Data {
-				return data.WithDashboard(template.Dashboard{
-					Range: "15m",
+				return data.WithData(map[string]string{
+					"custom": "customized-on-test",
+					"newkey": "newVar",
 				})
 			},
 			expOriginal: newData(),
-			expTransformed: template.Data{
-				Dashboard: template.Dashboard{
-					Range: "15m",
-				},
-				Query: template.Query{
-					DatasourceID: "ds1",
-					Labels: map[string]string{
-						"code":    "401",
-						"method":  "GET",
-						"handler": "/test/:id/status",
-					},
-				},
-			},
-		},
-		{
-			name: "Query",
-			data: newData(),
-			transform: func(data template.Data) template.Data {
-				return data.WithQuery(template.Query{
-					DatasourceID: "ds2",
-					Labels: map[string]string{
-						"code":     "402",
-						"otherKey": "otherValue",
-					},
-				})
-			},
-			expOriginal: newData(),
-			expTransformed: template.Data{
-				Dashboard: template.Dashboard{
-					Range: "10m",
-				},
-				Query: template.Query{
-					DatasourceID: "ds2",
-					Labels: map[string]string{
-						"code":     "402",
-						"otherKey": "otherValue",
-					},
-				},
+			expTransformed: map[string]string{
+				"__interval": "2m",
+				"__range":    "10m",
+				"__start":    "2019-04-19T08:38:59+02:00",
+				"__end":      "2019-04-19T10:38:59+02:00",
+				"custom":     "customized-on-test",
+				"newkey":     "newVar",
 			},
 		},
 	}
