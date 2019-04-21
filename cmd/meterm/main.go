@@ -15,6 +15,7 @@ import (
 	configurationv1 "github.com/slok/meterm/internal/service/configuration/v1"
 	"github.com/slok/meterm/internal/service/log"
 	metric "github.com/slok/meterm/internal/service/metric/datasource"
+	metricmiddleware "github.com/slok/meterm/internal/service/metric/middleware"
 	"github.com/slok/meterm/internal/view"
 	"github.com/slok/meterm/internal/view/render/termdash"
 )
@@ -63,6 +64,7 @@ func (m *Main) Run() error {
 	if err != nil {
 		return err
 	}
+	gatherer = metricmiddleware.Logger(m.logger, gatherer)
 
 	// Create controller.
 	ctrl := controller.NewController(gatherer)
