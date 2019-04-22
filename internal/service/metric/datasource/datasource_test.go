@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	mmetric "github.com/slok/meterm/internal/mocks/service/metric"
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/metric"
-	"github.com/slok/meterm/internal/service/metric/datasource"
+	mmetric "github.com/slok/grafterm/internal/mocks/service/metric"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/metric"
+	"github.com/slok/grafterm/internal/service/metric/datasource"
 )
 
 func TestGathererGatherSingle(t *testing.T) {

@@ -10,14 +10,14 @@ import (
 
 	"github.com/oklog/run"
 
-	"github.com/slok/meterm/internal/controller"
-	"github.com/slok/meterm/internal/service/configuration"
-	configurationv1 "github.com/slok/meterm/internal/service/configuration/v1"
-	"github.com/slok/meterm/internal/service/log"
-	metric "github.com/slok/meterm/internal/service/metric/datasource"
-	metricmiddleware "github.com/slok/meterm/internal/service/metric/middleware"
-	"github.com/slok/meterm/internal/view"
-	"github.com/slok/meterm/internal/view/render/termdash"
+	"github.com/slok/grafterm/internal/controller"
+	"github.com/slok/grafterm/internal/service/configuration"
+	configurationv1 "github.com/slok/grafterm/internal/service/configuration/v1"
+	"github.com/slok/grafterm/internal/service/log"
+	metric "github.com/slok/grafterm/internal/service/metric/datasource"
+	metricmiddleware "github.com/slok/grafterm/internal/service/metric/middleware"
+	"github.com/slok/grafterm/internal/view"
+	"github.com/slok/grafterm/internal/view/render/termdash"
 )
 
 var (

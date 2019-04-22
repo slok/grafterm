@@ -8,12 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	mcontroller "github.com/slok/meterm/internal/mocks/controller"
-	mrender "github.com/slok/meterm/internal/mocks/view/render"
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/log"
-	"github.com/slok/meterm/internal/view"
-	"github.com/slok/meterm/internal/view/render"
+	mcontroller "github.com/slok/grafterm/internal/mocks/controller"
+	mrender "github.com/slok/grafterm/internal/mocks/view/render"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/log"
+	"github.com/slok/grafterm/internal/view"
+	"github.com/slok/grafterm/internal/view/render"
 )
 
 func TestSinglestatWidget(t *testing.T) {

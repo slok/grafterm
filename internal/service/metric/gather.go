@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/slok/meterm/internal/model"
+	"github.com/slok/grafterm/internal/model"
 )
 
 // Gatherer knows how to gather metrics from different backends.

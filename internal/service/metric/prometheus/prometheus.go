@@ -9,8 +9,8 @@ import (
 	promv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	prommodel "github.com/prometheus/common/model"
 
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/metric"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/metric"
 )
 
 // ConfigGatherer is the configuration of the Prometheus gatherer.

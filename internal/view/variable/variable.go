@@ -3,7 +3,7 @@ package variable
 import (
 	"time"
 
-	"github.com/slok/meterm/internal/model"
+	"github.com/slok/grafterm/internal/model"
 )
 
 type Scope int

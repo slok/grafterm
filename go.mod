@@ -1,4 +1,4 @@
-module github.com/slok/meterm
+module github.com/slok/grafterm
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.3.3 // indirect

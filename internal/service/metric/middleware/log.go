@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/log"
-	"github.com/slok/meterm/internal/service/metric"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/log"
+	"github.com/slok/grafterm/internal/service/metric"
 )
 
 type logger struct {

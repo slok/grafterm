@@ -9,7 +9,7 @@ import (
 	"github.com/mum4k/termdash/linestyle"
 	"github.com/mum4k/termdash/widgets/segmentdisplay"
 
-	"github.com/slok/meterm/internal/model"
+	"github.com/slok/grafterm/internal/model"
 )
 
 const (

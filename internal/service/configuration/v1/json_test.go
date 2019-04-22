@@ -6,9 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/configuration/meta"
-	v1 "github.com/slok/meterm/internal/service/configuration/v1"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/configuration/meta"
+	v1 "github.com/slok/grafterm/internal/service/configuration/v1"
 )
 
 func TestJSONLoaderLoad(t *testing.T) {

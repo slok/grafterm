@@ -7,12 +7,12 @@ import (
 	"time"
 
 	prommodel "github.com/prometheus/common/model"
-	mpromv1 "github.com/slok/meterm/internal/mocks/github.com/prometheus/client_golang/api/prometheus/v1"
+	mpromv1 "github.com/slok/grafterm/internal/mocks/github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/metric/prometheus"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/metric/prometheus"
 )
 
 func TestGathererGatherSingle(t *testing.T) {

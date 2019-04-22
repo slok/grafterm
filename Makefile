@@ -1,7 +1,7 @@
 
 
 # Name of this service/application
-SERVICE_NAME := meterm
+SERVICE_NAME := grafterm
 
 # Path of the go service inside docker
 DOCKER_GO_SERVICE_PATH := /src

@@ -3,7 +3,7 @@ package template_test
 import (
 	"testing"
 
-	"github.com/slok/meterm/internal/view/template"
+	"github.com/slok/grafterm/internal/view/template"
 	"github.com/stretchr/testify/assert"
 )
 

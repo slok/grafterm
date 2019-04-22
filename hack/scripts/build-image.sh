@@ -8,7 +8,7 @@ if [ -z ${IMAGE_VERSION} ]; then
 fi
 
 REPOSITORY="slok/"
-IMAGE="meterm"
+IMAGE="grafterm"
 
 
 docker build \

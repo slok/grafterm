@@ -1,7 +1,7 @@
 package variable
 
 import (
-	"github.com/slok/meterm/internal/model"
+	"github.com/slok/grafterm/internal/model"
 )
 
 // ConstVariabler is used to manager contant variables in the application.

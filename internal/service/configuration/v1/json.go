@@ -6,7 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	"github.com/slok/meterm/internal/service/configuration"
+	"github.com/slok/grafterm/internal/service/configuration"
 )
 
 // JSONLoader will load JSON V1 configuration.

@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/configuration/meta"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/configuration/meta"
 )
 
 const (

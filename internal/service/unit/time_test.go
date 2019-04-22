@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/slok/meterm/internal/service/unit"
+	"github.com/slok/grafterm/internal/service/unit"
 	"github.com/stretchr/testify/assert"
 )
 

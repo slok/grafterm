@@ -3,7 +3,7 @@ package configuration
 import (
 	"io"
 
-	"github.com/slok/meterm/internal/model"
+	"github.com/slok/grafterm/internal/model"
 )
 
 // Configuration is the interface that the different configurations need to implement.
