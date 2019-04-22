@@ -1,7 +1,7 @@
 /*
 Package mocks will have all the mocks of the library.
 */
-package mocks // import "github.com/slok/meterm/internal/mocks"
+package mocks // import "github.com/slok/grafterm/internal/mocks"
 
 // Controller mocks.
 //go:generate mockery -output ./controller -outpkg controller -dir ../controller -name Controller

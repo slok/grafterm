@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/slok/meterm/internal/view/template"
+	"github.com/slok/grafterm/internal/view/template"
 )
 
 type syncConfig struct {

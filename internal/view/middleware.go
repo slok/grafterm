@@ -3,7 +3,7 @@ package view
 import (
 	"context"
 
-	"github.com/slok/meterm/internal/view/template"
+	"github.com/slok/grafterm/internal/view/template"
 )
 
 // withWidgetDataMiddleware will wrap a widget and every time is synced it will

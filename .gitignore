@@ -21,4 +21,4 @@ vendor/
 
 # App specific
 dashboards/
-meterm.log
+grafterm.log

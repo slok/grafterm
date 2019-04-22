@@ -8,7 +8,7 @@ import (
 const (
 	defConfig          = "dashboard.json"
 	defRefreshInterval = "10s"
-	defLogPath         = "meterm.log"
+	defLogPath         = "grafterm.log"
 )
 
 type flags struct {

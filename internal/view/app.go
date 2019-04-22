@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/slok/meterm/internal/controller"
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/log"
-	"github.com/slok/meterm/internal/view/render"
-	"github.com/slok/meterm/internal/view/template"
-	"github.com/slok/meterm/internal/view/variable"
+	"github.com/slok/grafterm/internal/controller"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/log"
+	"github.com/slok/grafterm/internal/view/render"
+	"github.com/slok/grafterm/internal/view/template"
+	"github.com/slok/grafterm/internal/view/variable"
 )
 
 // AppConfig are the options to run the app.

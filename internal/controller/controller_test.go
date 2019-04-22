@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/slok/meterm/internal/controller"
-	mmetric "github.com/slok/meterm/internal/mocks/service/metric"
-	"github.com/slok/meterm/internal/model"
+	"github.com/slok/grafterm/internal/controller"
+	mmetric "github.com/slok/grafterm/internal/mocks/service/metric"
+	"github.com/slok/grafterm/internal/model"
 )
 
 func TestGetSingleMetric(t *testing.T) {

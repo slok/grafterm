@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/slok/meterm/internal/model"
+	"github.com/slok/grafterm/internal/model"
 )
 
 // Gatherer is a fake Gatherer.

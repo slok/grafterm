@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/slok/meterm/internal/model"
+	"github.com/slok/grafterm/internal/model"
 )
 
 // Default colors got from Grafana.

@@ -10,9 +10,9 @@ import (
 	"github.com/mum4k/termdash/terminal/termbox"
 	"github.com/mum4k/termdash/terminal/terminalapi"
 
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/log"
-	"github.com/slok/meterm/internal/view/render"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/log"
+	"github.com/slok/grafterm/internal/view/render"
 )
 
 const (

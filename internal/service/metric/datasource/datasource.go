@@ -9,10 +9,10 @@ import (
 	prometheusapi "github.com/prometheus/client_golang/api"
 	prometheusv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/metric"
-	"github.com/slok/meterm/internal/service/metric/fake"
-	"github.com/slok/meterm/internal/service/metric/prometheus"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/metric"
+	"github.com/slok/grafterm/internal/service/metric/fake"
+	"github.com/slok/grafterm/internal/service/metric/prometheus"
 )
 
 // ConfigGatherer is the configuration of the multi Gatherer.

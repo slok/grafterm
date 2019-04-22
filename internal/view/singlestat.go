@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/slok/meterm/internal/controller"
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/view/render"
+	"github.com/slok/grafterm/internal/controller"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/view/render"
 )
 
 // singlestat is a widget that represents in text mode.

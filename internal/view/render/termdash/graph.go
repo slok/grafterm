@@ -11,8 +11,8 @@ import (
 	"github.com/mum4k/termdash/widgets/linechart"
 	"github.com/mum4k/termdash/widgets/text"
 
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/view/render"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/view/render"
 )
 
 const (

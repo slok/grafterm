@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/metric"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/metric"
 )
 
 // Controller is what has the domain logic, the one that

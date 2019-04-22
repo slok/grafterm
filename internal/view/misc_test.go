@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/slok/meterm/internal/model"
+	"github.com/slok/grafterm/internal/model"
 	"github.com/stretchr/testify/assert"
 )
 

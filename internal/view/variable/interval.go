@@ -3,8 +3,8 @@ package variable
 import (
 	"time"
 
-	"github.com/slok/meterm/internal/model"
-	"github.com/slok/meterm/internal/service/unit"
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/unit"
 )
 
 type intervalVariabler struct {

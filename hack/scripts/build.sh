@@ -3,8 +3,8 @@
 set -o errexit
 set -o nounset
 
-src=./cmd/meterm
-out=./bin/meterm
+src=./cmd/grafterm
+out=./bin/grafterm
 
 goarch=amd64
 
