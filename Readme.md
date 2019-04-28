@@ -14,4 +14,9 @@ Grafterm is an application to load dashboards on the terminal, you could think o
 - Configurable sutorefresh.
 - Single binary and easy usage/deployment.
 
+## Kudos
+
+This project would not be possible without the effort of many people and projects but specially [Grafana] for the inspiration, ideas and the project itself, and [Termdash] for the rendering of all those fancy graphs on the terminal.
+
 [grafana]: https://grafana.com/
+[termdash]: https://github.com/mum4k/termdash
