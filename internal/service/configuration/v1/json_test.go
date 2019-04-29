@@ -66,49 +66,43 @@ func TestJSONLoaderLoad(t *testing.T) {
 			jsonConfig: `{
 	"version": "v1",
 	"dashboard": {
-		"rows": [
+		"widgets": [
 			{
-				"title": "row1",
-				"border": true,
-				"widgets": [
-					{
-						"title": "widget1",
-						"gauge": {
-							"percentValue": true,
-							"max": 60,
-							"query": {
-								"expr": "testquery"
-							},
-							"thresholds": [
-								{
-									"color": "#37872D"
-								},
-								{
-									"color": "#FA6400",
-									"startValue": 50
-								},
-								{
-									"color": "#C4162A",
-									"startValue": 75
-								}
-							]
-						}
+				"title": "widget1",
+				"gauge": {
+					"percentValue": true,
+					"max": 60,
+					"query": {
+						"expr": "testquery"
 					},
-					{
-						"title": "widget2",
-						"singlestat": {
-							"textFormat": "%.02f",
-							"query": {
-								"expr": "testquery"
-							},
-							"thresholds": [
-								{
-									"color": "#FFF000"
-								}
-							]
+					"thresholds": [
+						{
+							"color": "#37872D"
+						},
+						{
+							"color": "#FA6400",
+							"startValue": 50
+						},
+						{
+							"color": "#C4162A",
+							"startValue": 75
 						}
-					}
-				]
+					]
+				}
+			},
+			{
+				"title": "widget2",
+				"singlestat": {
+					"textFormat": "%.02f",
+					"query": {
+						"expr": "testquery"
+					},
+					"thresholds": [
+						{
+							"color": "#FFF000"
+						}
+					]
+				}
 			}
 		]
 	}
@@ -116,49 +110,43 @@ func TestJSONLoaderLoad(t *testing.T) {
 			expConfig: &v1.Configuration{
 				Meta: meta.Meta{Version: "v1"},
 				Dashboard: v1.Dashboard{
-					Rows: []model.Row{
-						model.Row{
-							Title:  "row1",
-							Border: true,
-							Widgets: []model.Widget{
-								model.Widget{
-									Title: "widget1",
-									WidgetSource: model.WidgetSource{
-										Gauge: &model.GaugeWidgetSource{
-											PercentValue: true,
-											Max:          60,
-											Query: model.Query{
-												Expr: "testquery",
-											},
-											Thresholds: []model.Threshold{
-												model.Threshold{
-													Color: "#37872D",
-												},
-												model.Threshold{
-													Color:      "#FA6400",
-													StartValue: 50,
-												},
-												model.Threshold{
-													Color:      "#C4162A",
-													StartValue: 75,
-												},
-											},
+					Widgets: []model.Widget{
+						model.Widget{
+							Title: "widget1",
+							WidgetSource: model.WidgetSource{
+								Gauge: &model.GaugeWidgetSource{
+									PercentValue: true,
+									Max:          60,
+									Query: model.Query{
+										Expr: "testquery",
+									},
+									Thresholds: []model.Threshold{
+										model.Threshold{
+											Color: "#37872D",
+										},
+										model.Threshold{
+											Color:      "#FA6400",
+											StartValue: 50,
+										},
+										model.Threshold{
+											Color:      "#C4162A",
+											StartValue: 75,
 										},
 									},
 								},
-								model.Widget{
-									Title: "widget2",
-									WidgetSource: model.WidgetSource{
-										Singlestat: &model.SinglestatWidgetSource{
-											TextFormat: "%.02f",
-											Query: model.Query{
-												Expr: "testquery",
-											},
-											Thresholds: []model.Threshold{
-												model.Threshold{
-													Color: "#FFF000",
-												},
-											},
+							},
+						},
+						model.Widget{
+							Title: "widget2",
+							WidgetSource: model.WidgetSource{
+								Singlestat: &model.SinglestatWidgetSource{
+									TextFormat: "%.02f",
+									Query: model.Query{
+										Expr: "testquery",
+									},
+									Thresholds: []model.Threshold{
+										model.Threshold{
+											Color: "#FFF000",
 										},
 									},
 								},

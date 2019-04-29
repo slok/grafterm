@@ -26,18 +26,12 @@ func getBase() v1.Configuration {
 			},
 		},
 		Dashboard: v1.Dashboard{
-			Rows: []model.Row{
-				model.Row{
-					Title:  "row1",
-					Border: true,
-					Widgets: []model.Widget{
-						model.Widget{
-							Title: "widget1",
-							WidgetSource: model.WidgetSource{
-								Graph: &model.GraphWidgetSource{
-									Visualization: model.GraphVisualization{},
-								},
-							},
+			Widgets: []model.Widget{
+				model.Widget{
+					Title: "widget1",
+					WidgetSource: model.WidgetSource{
+						Graph: &model.GraphWidgetSource{
+							Visualization: model.GraphVisualization{},
 						},
 					},
 				},
@@ -66,7 +60,7 @@ func TestValidate(t *testing.T) {
 			name: "graph visualization regex should autocomplete with the compiled the regex.",
 			cfg: func() v1.Configuration {
 				base := getBase()
-				base.Dashboard.Rows[0].Widgets[0].Graph.Visualization.SeriesOverride = []model.SeriesOverride{
+				base.Dashboard.Widgets[0].Graph.Visualization.SeriesOverride = []model.SeriesOverride{
 					model.SeriesOverride{
 						Regex: ".*",
 					},
@@ -75,7 +69,7 @@ func TestValidate(t *testing.T) {
 			},
 			exp: func() v1.Configuration {
 				base := getBase()
-				base.Dashboard.Rows[0].Widgets[0].Graph.Visualization.SeriesOverride = []model.SeriesOverride{
+				base.Dashboard.Widgets[0].Graph.Visualization.SeriesOverride = []model.SeriesOverride{
 					model.SeriesOverride{
 						Regex:         ".*",
 						CompiledRegex: regexp.MustCompile(".*"),
@@ -104,7 +98,7 @@ func TestValidate(t *testing.T) {
 			name: "graph series visualization wrong regex should error.",
 			cfg: func() v1.Configuration {
 				base := getBase()
-				base.Dashboard.Rows[0].Widgets[0].Graph.Visualization.SeriesOverride = []model.SeriesOverride{
+				base.Dashboard.Widgets[0].Graph.Visualization.SeriesOverride = []model.SeriesOverride{
 					model.SeriesOverride{
 						Regex: "8-(",
 					},

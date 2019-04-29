@@ -61,20 +61,18 @@ func (c *Configuration) validateDatasources() error {
 
 func (c *Configuration) validateDashboard() error {
 	// Check dashboard.
-	for _, row := range c.Dashboard.Rows {
-		for _, widget := range row.Widgets {
-			switch {
-			// Check graphs.
-			case widget.Graph != nil:
-				for i, seriesOverride := range widget.Graph.Visualization.SeriesOverride {
-					// Compile color regexes on override series.
-					re, err := regexp.Compile(seriesOverride.Regex)
-					if err != nil {
-						return err
-					}
-					seriesOverride.CompiledRegex = re
-					widget.Graph.Visualization.SeriesOverride[i] = seriesOverride
+	for _, widget := range c.Dashboard.Widgets {
+		switch {
+		// Check graphs.
+		case widget.Graph != nil:
+			for i, seriesOverride := range widget.Graph.Visualization.SeriesOverride {
+				// Compile color regexes on override series.
+				re, err := regexp.Compile(seriesOverride.Regex)
+				if err != nil {
+					return err
 				}
+				seriesOverride.CompiledRegex = re
+				widget.Graph.Visualization.SeriesOverride[i] = seriesOverride
 			}
 		}
 	}
