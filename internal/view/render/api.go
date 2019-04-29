@@ -4,12 +4,13 @@ import (
 	"context"
 
 	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/view/grid"
 )
 
 // Renderer is the interface that knows how to load a dashboard to be rendered
 // in some target of UI.
 type Renderer interface {
-	LoadDashboard(ctx context.Context, dashboard model.Dashboard) ([]Widget, error)
+	LoadDashboard(ctx context.Context, grid *grid.Grid) ([]Widget, error)
 	Close()
 }
 

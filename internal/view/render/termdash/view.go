@@ -12,6 +12,7 @@ import (
 
 	"github.com/slok/grafterm/internal/model"
 	"github.com/slok/grafterm/internal/service/log"
+	graftermgrid "github.com/slok/grafterm/internal/view/grid"
 	"github.com/slok/grafterm/internal/view/render"
 )
 
@@ -59,8 +60,7 @@ func (t *termDashboard) Close() {
 }
 
 // Run will run the view, its' a blocker.
-func (t *termDashboard) LoadDashboard(ctx context.Context, dashboard model.Dashboard) ([]render.Widget, error) {
-
+func (t *termDashboard) LoadDashboard(ctx context.Context, gr *graftermgrid.Grid) ([]render.Widget, error) {
 	// Create main view (root).
 	c, err := container.New(t.terminal, container.ID(rootID))
 	if err != nil {
@@ -68,7 +68,7 @@ func (t *termDashboard) LoadDashboard(ctx context.Context, dashboard model.Dashb
 	}
 
 	// Get the layout from the grid.
-	gridOpts, err := t.gridLayout(dashboard)
+	gridOpts, err := t.gridLayout(gr)
 	if err != nil {
 		return []render.Widget{}, err
 	}
@@ -93,58 +93,68 @@ func (t *termDashboard) LoadDashboard(ctx context.Context, dashboard model.Dashb
 	return t.widgets, nil
 }
 
-func (t *termDashboard) gridLayout(dashboard model.Dashboard) ([]container.Option, error) {
+func (t *termDashboard) gridLayout(gr *graftermgrid.Grid) ([]container.Option, error) {
 	builder := grid.New()
 
-	gridElements := []grid.Element{}
-
-	// Create each row.
-	rowHeightPerc := (100 / len(dashboard.Rows)) - 1 // All rows same percentage of screen height.
-	for _, rowcfg := range dashboard.Rows {
-
-		// TODO(slok): Allow different percentage per widget.
-		widgetColPerc := (100 / len(rowcfg.Widgets)) - 1 // All widgets same percentage of screen height.
-
-		// Create widgets per row
-		var elements []grid.Element
-		for _, widgetcfg := range rowcfg.Widgets {
-
-			var err error
-			var widget render.Widget
+	// Create the rendering widgets.
+	rowsElements := [][]grid.Element{}
+	for _, row := range gr.Rows {
+		rowElements := []grid.Element{}
+		totalFilled := 0
+		for _, rowElement := range row.Elements {
+			cfg := rowElement.Widget
 
 			// New widget.
-			switch {
-			case widgetcfg.Gauge != nil:
-				widget, err = newGauge(widgetcfg)
+			var element grid.Element
+			if !rowElement.Empty {
+				widget, err := t.newWidget(cfg)
 				if err != nil {
-					t.logger.Errorf("error creating gauge: %s", err)
+					t.logger.Errorf("error creating widget: %s", err)
 					continue
 				}
-			case widgetcfg.Singlestat != nil:
-				widget, err = newSinglestat(widgetcfg)
-				if err != nil {
-					t.logger.Errorf("error creating gauge: %s", err)
-					continue
-				}
-			case widgetcfg.Graph != nil:
-				widget, err = newGraph(widgetcfg)
-				if err != nil {
-					t.logger.Errorf("error creating graph: %s", err)
-					continue
-				}
+				// Add widget to the tracked widgets so the app can control them.
+				t.widgets = append(t.widgets, widget)
+
+				// Get the grid.Element from our widget and place on the grid.
+				element = widget.(elementer).getElement()
 			}
-			// Add widget to the tracked widgets so the app can control them.
-			t.widgets = append(t.widgets, widget)
 
-			// Get the grind.Element from our widget and place on the grid.
-			element := widget.(elementer).getElement()
-			element = grid.ColWidthPerc(widgetColPerc, element)
+			// Fix the size on the last element.
+			// Termdash does not allow a column greater than 99, we have
+			// used percents (0-100), so we remove a 1% from the last element.
+			// Ugly but makes easy to work with % and is difficult for the
+			// eye to notice of the 1%.
+			elementPerc := rowElement.PercentSize
+			if totalFilled+elementPerc >= 100 {
+				elementPerc--
+			}
+			totalFilled += elementPerc
 
-			// Append to the row.
-			elements = append(elements, element)
+			// Place it on the row.
+			element = grid.ColWidthPerc(elementPerc, element)
+			rowElements = append(rowElements, element)
 		}
+		rowsElements = append(rowsElements, rowElements)
+	}
 
-		rowElement := grid.RowHeightPerc(rowHeightPerc, elements...)
+	// Add rows to grid.
+	var gridElements []grid.Element
+	totalFilled := 0
+	for i, row := range gr.Rows {
+		rowElements := rowsElements[i]
+		rowPerc := row.PercentSize
+		// Fix the size on the last element.
+		// Termdash does not allow a rows greater than 99, we have
+		// used percents (0-100), so we remove a 1% from the last element.
+		// Ugly but makes easy to work with % and is difficult for the
+		// eye to notice of the 1%.
+		if totalFilled+rowPerc >= 100 {
+			rowPerc--
+		}
+		totalFilled += rowPerc
+
+		// Place the row.
+		rowElement := grid.RowHeightPerc(rowPerc, rowElements...)
 		gridElements = append(gridElements, rowElement)
 	}
 
@@ -153,4 +163,20 @@ func (t *termDashboard) gridLayout(dashboard model.Dashboard) ([]container.Optio
 
 	// Get the layout from the grid.
 	return builder.Build()
+}
+
+func (t *termDashboard) newWidget(widgetcfg model.Widget) (render.Widget, error) {
+	var widget render.Widget
+	var err error
+
+	switch {
+	case widgetcfg.Gauge != nil:
+		widget, err = newGauge(widgetcfg)
+	case widgetcfg.Singlestat != nil:
+		widget, err = newSinglestat(widgetcfg)
+	case widgetcfg.Graph != nil:
+		widget, err = newGraph(widgetcfg)
+	}
+
+	return widget, err
 }

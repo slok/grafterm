@@ -4,6 +4,9 @@
 
 ### Added
 
+- Widget grid fixed mode.
+- Widget grid adaptive mode.
+- Grid implementation for widgets.
 - Dynamic X-axis time labels based on time range and steps.
 - Templated queries using variables.
 - Const and autointerval variables.
