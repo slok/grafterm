@@ -24,6 +24,9 @@ const (
 	legendVerticalPerc    = 4
 	paddingVerticalPerc   = 50
 	legendCharacter       = `⠤⠤`
+	axesColor             = 8
+	yAxisLabelsColor      = 15
+	xAxisLabelsColor      = 248
 )
 
 // graph satisfies render.GraphWidget interface.
@@ -39,9 +42,9 @@ func newGraph(cfg model.Widget) (*graph, error) {
 	// Create the Graphwidget.
 	// TODO(slok): Allow configuring the color of the axis.
 	lc, err := linechart.New(
-		linechart.AxesCellOpts(cell.FgColor(cell.ColorRed)),
-		linechart.YLabelCellOpts(cell.FgColor(cell.ColorGreen)),
-		linechart.XLabelCellOpts(cell.FgColor(cell.ColorCyan)),
+		linechart.AxesCellOpts(cell.FgColor(cell.ColorNumber(axesColor))),
+		linechart.YLabelCellOpts(cell.FgColor(cell.ColorNumber(yAxisLabelsColor))),
+		linechart.XLabelCellOpts(cell.FgColor(cell.ColorNumber(xAxisLabelsColor))),
 		linechart.YAxisAdaptive(),
 	)
 	if err != nil {
