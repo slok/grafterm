@@ -7,10 +7,14 @@ import (
 	"github.com/slok/grafterm/internal/model"
 )
 
+const (
+	maxWidthPercent = 100
+)
+
 // Element is a "placeable" element on the grid, depending on the
 // implementation of the renderer will be created in one way or another.
 type Element struct {
-	// Percent size is the percent of the total in the horizontal position.
+	// Percent size is the percent of the total in the horizontal axis.
 	PercentSize int
 	// Empty marks the element as an empty block that will not be used.
 	Empty bool
@@ -18,11 +22,13 @@ type Element struct {
 	Widget model.Widget
 }
 
-// Row is composed by multiple rows, the rows are horizontally placed,
-// also know as the X axis.
+// Row is composed by multiple elements.
 type Row struct {
-	// Elements are the elements that will be placed on the row.
-	Elements    []*Element
+	// Elements are the elements that will be placed on the row. The
+	// elements of a row are horizontally placed. also known as
+	// the X axis.
+	Elements []*Element
+	// PercentSize is the size in percentage of the total vertical axis.
 	PercentSize int
 }
 
@@ -30,11 +36,11 @@ type Row struct {
 // are the columns, the elements are the columns.
 //
 // ----------------------------------------------------
-// [   element  ] [element] [element] [element]
+// [------element------] [--element--] [---element---]
 // ----------------------------------------------------
-// [element] [element] [            element           ]
+// [element] [element] [------------element----------]
 // ----------------------------------------------------
-// [element]             [element]            [element]
+// [-element-]       [----element----]        [element]
 // ----------------------------------------------------
 type Grid struct {
 	// Is the max size of the X axis. This is equal to a 100 percentage.
@@ -42,13 +48,15 @@ type Grid struct {
 	// Is the max size of the y axis. This is equal to a 100 percentage.
 	MaxHeight int
 	// Rows are the rows the grid has (inside the rows are the columns).
+	// the rows are vertically placed, also know as the Y axis.
 	Rows []*Row
 }
 
 // NewAdaptiveGrid returns a grid that places the widgets in the received order
 // without checking its position (x, y) only using the size of the widgets.
-// it will adapt the rows if the widgets don't enter in the row there is being
-// placed one after the other.
+// It will adapt the rows dinamically so the widgets that are bigger than the empty
+// space on the row, will be placed in the next row an so own, on after the other
+// creating new rows until all the widgets have been placed.
 func NewAdaptiveGrid(maxWidth int, widgets []model.Widget) (*Grid, error) {
 	d := &Grid{
 		MaxWidth: maxWidth,
@@ -79,13 +87,13 @@ func (g *Grid) fillAdaptiveGrid(widgets []model.Widget) {
 		// To get he correct row of the widget then we need to see if
 		// the widget is from this row or next row .
 		// TODO(slok): check if widget is greater than grid totalX
-		if filledRow+cfg.GridPos.W > g.MaxWidth {
+		if filledRow+e.PercentSize > maxWidthPercent {
 			// If there is spare space on the row, before creating a new row
 			// create an empty widget to fill the row until the end.
-			if filledRow < g.MaxWidth {
+			if filledRow < maxWidthPercent {
 				r.Elements = append(r.Elements, &Element{
 					Empty:       true,
-					PercentSize: percent(g.MaxWidth-filledRow, g.MaxWidth),
+					PercentSize: maxWidthPercent - filledRow,
 				})
 			}
 
@@ -97,17 +105,17 @@ func (g *Grid) fillAdaptiveGrid(widgets []model.Widget) {
 		}
 
 		// Add widget to row.
-		filledRow += cfg.GridPos.W
+		filledRow += e.PercentSize
 		r.Elements = append(r.Elements, e)
 	}
 
-	// With all the grid filled, get each row size (all the same for now).
-	// TODO(slok): Get highest H in the row to set the row size.
-	totalRows := len(g.Rows)
-	totalHeigh := 0
+	// Set the size of the rows, the rows have been dinamically created so until
+	// we had all the rows we can't be sure what is the total of the vertical axis,
+	// set the same vertical percent size of the rows to all the rows
+	// (e.g 4 rows of 25% or 3 rows of 33% or 10 rows of 10% ).
+	totalRows := len(g.Rows) // This is the 100%.
 	for _, row := range g.Rows {
 		row.PercentSize = percent(1, totalRows)
-		totalHeigh += row.PercentSize
 	}
 }
 
@@ -154,7 +162,7 @@ func (g *Grid) fillFixedGrid(widgets []model.Widget) {
 			posperc := percent(rowElement.Widget.GridPos.X, g.MaxWidth)
 
 			// If what we filled is not the start point of the current
-			// widget it meas that we have a black space.
+			// widget it means that we have a blank space.
 			if rowFilled < posperc {
 				rowElements = append(rowElements, &Element{
 					Empty:       true,
@@ -167,10 +175,10 @@ func (g *Grid) fillFixedGrid(widgets []model.Widget) {
 
 		// Check if we need to fill with blank space until the end
 		// of the row.
-		if rowFilled < 100 {
+		if rowFilled < maxWidthPercent {
 			rowElements = append(rowElements, &Element{
 				Empty:       true,
-				PercentSize: 100 - rowFilled,
+				PercentSize: maxWidthPercent - rowFilled,
 			})
 		}
 
@@ -180,13 +188,10 @@ func (g *Grid) fillFixedGrid(widgets []model.Widget) {
 
 // initRows creates all the rows in empty state.
 func (g *Grid) initRows() {
-	filled := 0
 	for i := 0; i < g.MaxHeight; i++ {
-		size := percent(1, g.MaxHeight)
 		g.Rows = append(g.Rows, &Row{
-			PercentSize: size,
+			PercentSize: percent(1, g.MaxHeight),
 		})
-		filled += size
 	}
 }
 
