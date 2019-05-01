@@ -10,6 +10,7 @@ import (
 	"github.com/slok/grafterm/internal/controller"
 	"github.com/slok/grafterm/internal/model"
 	"github.com/slok/grafterm/internal/service/log"
+	"github.com/slok/grafterm/internal/view/grid"
 	"github.com/slok/grafterm/internal/view/render"
 	"github.com/slok/grafterm/internal/view/template"
 	"github.com/slok/grafterm/internal/view/variable"
@@ -88,8 +89,25 @@ func (a *App) Run(ctx context.Context, dashboard model.Dashboard) error {
 }
 
 func (a *App) run(ctx context.Context, dashboard model.Dashboard) error {
+	// Create grid to render.
+	// TODO(slok): set maxWidth configurable.
+	const maxWidth = 100
+	var gr *grid.Grid
+	var err error
+	if dashboard.Grid.FixedWidgets {
+		gr, err = grid.NewFixedGrid(maxWidth, dashboard.Widgets)
+		if err != nil {
+			return err
+		}
+	} else {
+		gr, err = grid.NewAdaptiveGrid(maxWidth, dashboard.Widgets)
+		if err != nil {
+			return err
+		}
+	}
+
 	// Call the View to load the dashboard and return us the widgets that we will need to call.
-	renderWidgets, err := a.renderer.LoadDashboard(ctx, dashboard)
+	renderWidgets, err := a.renderer.LoadDashboard(ctx, gr)
 	if err != nil {
 		return err
 	}

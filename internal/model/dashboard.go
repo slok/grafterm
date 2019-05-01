@@ -4,8 +4,9 @@ import "regexp"
 
 // Dashboard represents a dashboard.
 type Dashboard struct {
+	Grid      Grid       `json:"grid,omitempty"`
 	Variables []Variable `json:"variables,omitempty"`
-	Rows      []Row      `json:"rows,omitempty"`
+	Widgets   []Widget   `json:"widgets,omitempty"`
 }
 
 // Variable is a dynamic variable that will be available through the
@@ -31,17 +32,33 @@ type IntervalVariableSource struct {
 	Steps int `json:"steps,omitempty"`
 }
 
-// Row represents a row.
-type Row struct {
-	Title   string   `json:"title,omitempty"`
-	Border  bool     `json:"border,omitempty"`
-	Widgets []Widget `json:"widgets,omitempty"`
-}
-
 // Widget represents a widget.
 type Widget struct {
-	Title        string `json:"title,omitempty"`
+	Title        string  `json:"title,omitempty"`
+	GridPos      GridPos `json:"gridPos,omitempty"`
 	WidgetSource `json:",inline"`
+}
+
+// Grid represents the options of the grid in the dashboard.
+type Grid struct {
+	// Fixed means that the grid positions (gridPos) of the widgets
+	// will be fixed and need X and Y values.
+	// If false it will be adaptive and will ignore X and Y values
+	// and only use the size of the widget (W, width).
+	FixedWidgets bool `json:"fixedWidgets,omitempty"`
+}
+
+// GridPos represents the grid position.
+type GridPos struct {
+	// X represents the position on the grid (from 0 to 100).
+	X int `json:"x,omitempty"`
+	// Y represents the position on the grid (from 0 to infinite,
+	// where the total will be used using all the widgets Y and H).
+	Y int `json:"y,omitempty"`
+	// W represents the width of the widget (same unit as X).
+	W int `json:"w,omitempty"`
+	// TODO(slok): H represents the height of the widget (same unit as Y).
+	// H int `json:"h,omitempty"`
 }
 
 // WidgetSource will tell what kind of widget is.
