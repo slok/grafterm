@@ -26,6 +26,9 @@ func getBase() v1.Configuration {
 			},
 		},
 		Dashboard: v1.Dashboard{
+			Grid: model.Grid{
+				MaxWidth: 24,
+			},
 			Widgets: []model.Widget{
 				model.Widget{
 					Title: "widget1",
@@ -54,6 +57,19 @@ func TestValidate(t *testing.T) {
 			},
 			exp: func() v1.Configuration {
 				return getBase()
+			},
+		},
+		{
+			name: "Default maxWidth.",
+			cfg: func() v1.Configuration {
+				cfg := getBase()
+				cfg.Dashboard.Grid.MaxWidth = 0
+				return cfg
+			},
+			exp: func() v1.Configuration {
+				cfg := getBase()
+				cfg.Dashboard.Grid.MaxWidth = 100
+				return cfg
 			},
 		},
 		{

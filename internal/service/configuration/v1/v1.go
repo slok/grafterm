@@ -60,7 +60,12 @@ func (c *Configuration) validateDatasources() error {
 }
 
 func (c *Configuration) validateDashboard() error {
-	// Check dashboard.
+	// Check grid settings.
+	if c.Dashboard.Grid.MaxWidth == 0 {
+		c.Dashboard.Grid.MaxWidth = 100
+	}
+
+	// Check widgets.
 	for _, widget := range c.Dashboard.Widgets {
 		switch {
 		// Check graphs.

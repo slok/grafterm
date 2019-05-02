@@ -4,6 +4,7 @@
 
 ### Added
 
+- MaxWidth option that sets the horizontal scale of the grid.
 - Widget grid fixed mode.
 - Widget grid adaptive mode.
 - Grid implementation for widgets.
