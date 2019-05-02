@@ -90,17 +90,15 @@ func (a *App) Run(ctx context.Context, dashboard model.Dashboard) error {
 
 func (a *App) run(ctx context.Context, dashboard model.Dashboard) error {
 	// Create grid to render.
-	// TODO(slok): set maxWidth configurable.
-	const maxWidth = 100
 	var gr *grid.Grid
 	var err error
 	if dashboard.Grid.FixedWidgets {
-		gr, err = grid.NewFixedGrid(maxWidth, dashboard.Widgets)
+		gr, err = grid.NewFixedGrid(dashboard.Grid.MaxWidth, dashboard.Widgets)
 		if err != nil {
 			return err
 		}
 	} else {
-		gr, err = grid.NewAdaptiveGrid(maxWidth, dashboard.Widgets)
+		gr, err = grid.NewAdaptiveGrid(dashboard.Grid.MaxWidth, dashboard.Widgets)
 		if err != nil {
 			return err
 		}

@@ -59,6 +59,11 @@ func TestJSONLoaderLoad(t *testing.T) {
 						}},
 					},
 				},
+				Dashboard: model.Dashboard{
+					Grid: model.Grid{
+						MaxWidth: 100,
+					},
+				},
 			},
 		},
 		{
@@ -66,6 +71,9 @@ func TestJSONLoaderLoad(t *testing.T) {
 			jsonConfig: `{
 	"version": "v1",
 	"dashboard": {
+		"grid": {
+			"maxWidth": 24
+		},
 		"widgets": [
 			{
 				"title": "widget1",
@@ -110,6 +118,9 @@ func TestJSONLoaderLoad(t *testing.T) {
 			expConfig: &v1.Configuration{
 				Meta: meta.Meta{Version: "v1"},
 				Dashboard: v1.Dashboard{
+					Grid: model.Grid{
+						MaxWidth: 24,
+					},
 					Widgets: []model.Widget{
 						model.Widget{
 							Title: "widget1",

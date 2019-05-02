@@ -46,6 +46,12 @@ type Grid struct {
 	// If false it will be adaptive and will ignore X and Y values
 	// and only use the size of the widget (W, width).
 	FixedWidgets bool `json:"fixedWidgets,omitempty"`
+	// MaxWidth is the maximum width (horizontal) the Grid will have, this will be
+	// the scale for the widgets `GridPos.W`. For example a `GridPos.W: 50`
+	// in a `Grid.MaxWidth: 100` would be half of the row, but in a `Grid.MaxWidth: 1000`
+	// would be a 5% of the row.
+	// Not setting MaxWidth or setting to 0 would fallback to default MaxWidth.
+	MaxWidth int `json:"maxWidth,omitempty"`
 }
 
 // GridPos represents the grid position.
