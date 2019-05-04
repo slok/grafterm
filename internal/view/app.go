@@ -10,6 +10,7 @@ import (
 	"github.com/slok/grafterm/internal/controller"
 	"github.com/slok/grafterm/internal/model"
 	"github.com/slok/grafterm/internal/service/log"
+	"github.com/slok/grafterm/internal/service/unit"
 	"github.com/slok/grafterm/internal/view/grid"
 	"github.com/slok/grafterm/internal/view/render"
 	"github.com/slok/grafterm/internal/view/template"
@@ -193,7 +194,7 @@ func (a *App) getSyncConfig() syncConfig {
 	}
 
 	if cfg.timeRangeEnd.IsZero() {
-		cfg.timeRangeEnd = time.Now()
+		cfg.timeRangeEnd = time.Now().UTC()
 	}
 
 	if cfg.timeRangeStart.IsZero() {
@@ -208,8 +209,8 @@ func (a *App) getSyncConfig() syncConfig {
 
 func (a *App) getDashboardVariableData() template.Data {
 	data := template.Data(map[string]string{
-		"__range:":          fmt.Sprintf("%v", a.cfg.RelativeTimeRange),
-		"__refresInterval:": fmt.Sprintf("%v", a.cfg.RefreshInterval),
+		"__range":          unit.DurationToSimpleString(a.cfg.RelativeTimeRange),
+		"__refresInterval": unit.DurationToSimpleString(a.cfg.RefreshInterval),
 	})
 
 	// Load variablers data from the dashboard scope.
