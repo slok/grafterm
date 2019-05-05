@@ -1,0 +1,281 @@
+# Configuration file
+
+First of all there are dashboard examples [here][dashboard-examples]
+
+The configuration file format is JSON and is splitted in two main blocks, `datasources` and `dashboard`.
+
+```json
+{
+  "version": "v1",
+  "datasources": [],
+  "dashboard": {}
+}
+```
+
+## Datasources
+
+This main block contains a list of the datasources being used by the dashboard, depending on the datasource type it will have different options. The dashboard widgets will reference the datasource by the `id`.
+
+```json
+  "datasources": [
+    {
+      "id": "ds1",
+      "prometheus": {
+        "address": "http://127.0.0.1:9090"
+      }
+    },
+    {
+      "id": "ds2",
+      "prometheus": {
+        "address": "http://127.0.0.1:9091"
+      }
+    }
+  ],
+```
+
+## Dashboard
+
+The dashboard contains the dashboard configuration and is composed of multiple smaller configuration blocks.
+
+```json
+  "dashboard": {
+    "grid": {},
+    "variables": [],
+    "widgets": []
+  }
+```
+
+### Grid
+
+The grid has configuration of how the grid of the dashboard will behave.
+
+```json
+
+"grid": {
+    "fixedWidgets": true,
+    "maxWidth": 100
+}
+```
+
+#### `maxWidth`
+
+Set the scale of the widgets width, by default is 100, so the widgets should have a width based on 100 by default.
+
+For example, 100 means all the row and 50 means half of the row, if you change the `maxWith` you will need to change the width of the widgets.
+
+#### `fixedWidgets`
+
+The grid has 2 wais of behave, adaptive and fixed, by default this setting is `false` so it means that the grid is adaptive.
+
+Adaptive grids ignore widget's `gridPos.x` and `gridPos.y` and only check the width of the widget (`gridPos.w`), this means that it will fill the row until the next widget doesn't fit on that row and will create a new row.
+
+Fixed grids need that the widget have the `x`, `y` and `w`, are more flexible because you can leave spaces between widgets but need all the data so the widget can be placed on the grid.
+
+### Variables
+
+Some strings on the dashboard can be templated (for now only queries and graph labels), here comes the utility of the variables.
+
+Variables are variables that have dynamic values depending on how and when the dashboard has been loaded, there are of different types.
+
+#### Default variables
+
+These are variables that grafterm loads automatically on the dashboard and can be used by the templating system:
+
+- `__range`: The range duration the dashboard is loading.
+- `__refresInterval`: The dashboard refresh interval selected.
+
+#### Constant
+
+Constant variables are constants, they don't change, are used to set the value on one place and use it on many queries, for example `environment`.
+
+```json
+"variables": [
+    {
+        "name": "env",
+        "constant": {
+            "value": "production"
+        }
+    }
+]
+```
+
+#### Interval
+
+Interval sets on a variable a dynamic interval based on the range loaded using optional `steps` value. This is handy to have smoother graphs when the range is big because based on the steps the interval would be bigger also and would remove the spikes
+
+```json
+"variables": [
+    {
+        "name": "interval",
+        "interval": {
+            "steps": 50
+        }
+    }
+]
+```
+
+### Widgets
+
+All widgets have some common settings and then custom settings that differ one from the others depending on the kind of widget.
+
+#### Common
+
+```json
+"widgets": [
+    {
+        "title": "Some widget",
+        "gridPos": {
+            "x": 0,
+            "y": 0,
+            "w": 5,
+        }
+    }
+]
+```
+
+##### `title`
+
+The tittle of the widget.
+
+##### `gridPos`
+
+This argument describes the where and size of the widget. if using adaptive grid `x` and `y` will be ignored. check `Grid` section to know how this works.
+
+#### Gauge
+
+This widget is for realtime metrics, doens't show a range of metrics it shows the last point in time (now) of the metric, this means that only accepts one query.
+
+It has fixed minimum and maximum values to be rendered on the terminal and can work as a percentage based widget (from 0% to 100%).
+
+It can have configured the thresholds so it changes the color of the widget based on them.
+
+```json
+{
+  "gauge": {
+    "query": {},
+    "percentValue": true,
+    "max": 60,
+    "min": 0,
+    "thresholds": [
+      {
+        "color": "#37872D"
+      },
+      {
+        "color": "#FA6400",
+        "startValue": 50
+      },
+      {
+        "color": "#C4162A",
+        "startValue": 75
+      }
+    ]
+  }
+}
+```
+
+##### `percentValue`
+
+If `true` it will show the percent value based on the `max` setting. For example if `max: 60` then a value of `60` would show `100%`.
+
+If `false` it will show the value itself. For example if `max: 60` would show `60` as value but the widget would render the gauge bar at the highest point.
+
+##### `thresholds`
+
+Is a list of thresholds, if no `startValue` it will be taken as the base color, if no more thresholds this will be the color of the widget. If more thresholds are on the list then it will set the color based on the range of the thresholds from `startValue` until the next `startValue`.
+
+#### Singlestat
+
+The singlestat acts similar to the Gauge, it's realtime and accepts thresholds but id renders the value itself and not a visual representation of fixed boundaries.
+
+```json
+"singlestat": {
+    "query": {},
+    "textFormat": "%.2f MS",
+    "thresholds": [
+        {
+            "color": "#299c46"
+        },
+        {
+            "color": "#FF780A",
+            "startValue": 350
+        },
+        {
+            "color": "#d44a3a",
+            "startValue": 600
+        }
+    ]
+}
+```
+
+##### `textFormat`
+
+This will format the metric, it is based on golang `fmt`.
+
+#### Graph
+
+This widget graphs different metric series in a range. It accepts multiple queries that will be aggregated on the same graph. A single query can be rendered with multiple series (depending on the returned results).
+
+```json
+"graph": {
+    "visualization": {
+        "legend": {
+            "disable": false,
+            "rightSide": true
+        },
+        "seriesOverride": [
+            {
+                "regex": "p99",
+                "color": "#c15c17"
+            },
+            {
+                "regex": "p95",
+                "color": "#f2c96d"
+            },
+            {
+                "regex": "p50",
+                "color": "#f9ba8f"
+            }
+        ]
+    },
+    "queries": []
+}
+```
+
+##### `visualization.legend`
+
+The legend of the graph visualization can be enabled or disabled. It's enabled by default and can be set on the right of the graph, by default it's on the bottom of it.
+
+##### `visualization.seriesOverride`
+
+Each of the graph series can be override based on the legend displayed using a regex, this means that multiple series can be override using the same options.
+
+The setting that can be override at this moment are:
+
+- `color`: The color of the displayed series.
+
+### Templating
+
+Templating of strings use golang built in template. You can use variables of different kinds on different parts of the dashboard.
+
+Examples of using templating system:
+
+- `"{{ .backend }}"`
+- `sum(rate(http_request_duration_seconds_count[{{.interval}}]))`
+
+### Query
+
+Query acts differently depending on the widget. If the widget is a real-time widget or a range based widget.
+
+Is composed of a datasource, a legend representation and an expression. The expression will be used on the datasource referenced and the legend will represent the different metrics obtained.
+
+```json
+{
+  "datasourceID": "ds",
+  "expr": "sum(rate(http_request_duration_seconds_count[{{.interval}}])) by (code)",
+  "legend": "{{ .code }}"
+}
+```
+
+The legend has the ability to use templating and has inside loaded the metric labels obtained by the datasource kind.
+
+[dashboard-examples]: dashboard-examples
