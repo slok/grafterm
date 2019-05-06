@@ -190,7 +190,7 @@ The singlestat acts similar to the Gauge, it's realtime and accepts thresholds b
 ```json
 "singlestat": {
     "query": {},
-    "textFormat": "%.2f MS",
+    "valueText": "{{.value}}",
     "thresholds": [
         {
             "color": "#299c46"
@@ -207,9 +207,14 @@ The singlestat acts similar to the Gauge, it's realtime and accepts thresholds b
 }
 ```
 
-##### `textFormat`
+##### `valueText`
 
-This will format the metric, it is based on golang `fmt`.
+This is what will be rendered on the singlestat panel, is a go template and the value of the metric is accessible in `.value`. By default it will print the metric value as it is (`{{.value}}`)
+
+Examples:
+
+- Print with 2 decimals: `{{ printf "%.2f" .value }}`
+- Print DOWN if value `<1` and UP on `>=1`: `{{ if (lt .value 1.0) }}DOWN{{else}}UP{{end}}`
 
 #### Graph
 

@@ -38,13 +38,13 @@ func (_m *SinglestatWidget) SetColor(hexColor string) error {
 	return r0
 }
 
-// Sync provides a mock function with given fields: value
-func (_m *SinglestatWidget) Sync(value float64) error {
-	ret := _m.Called(value)
+// Sync provides a mock function with given fields: text
+func (_m *SinglestatWidget) Sync(text string) error {
+	ret := _m.Called(text)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(float64) error); ok {
-		r0 = rf(value)
+	if rf, ok := ret.Get(0).(func(string) error); ok {
+		r0 = rf(text)
 	} else {
 		r0 = ret.Error(0)
 	}

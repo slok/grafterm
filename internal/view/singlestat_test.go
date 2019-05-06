@@ -37,7 +37,23 @@ func TestSinglestatWidget(t *testing.T) {
 				},
 			},
 			exp: func(mc *mrender.SinglestatWidget) {
-				mc.On("Sync", 19.14).Return(nil)
+				mc.On("Sync", "19.14").Return(nil)
+			},
+		},
+		{
+			name: "A singlestat with custom template should render ok.",
+			controllerMetric: &model.Metric{
+				Value: 19.14,
+			},
+			cfg: model.Widget{
+				WidgetSource: model.WidgetSource{
+					Singlestat: &model.SinglestatWidgetSource{
+						ValueText: `this is a test with {{printf "%.1f" .value}} value`,
+					},
+				},
+			},
+			exp: func(mc *mrender.SinglestatWidget) {
+				mc.On("Sync", "this is a test with 19.1 value").Return(nil)
 			},
 		},
 		{
@@ -70,7 +86,7 @@ func TestSinglestatWidget(t *testing.T) {
 				Expr: "this_is_a_test[10m]",
 			},
 			exp: func(mc *mrender.SinglestatWidget) {
-				mc.On("Sync", 19.14).Return(nil)
+				mc.On("Sync", "19.14").Return(nil)
 			},
 		},
 		{
@@ -91,7 +107,7 @@ func TestSinglestatWidget(t *testing.T) {
 				},
 			},
 			exp: func(mc *mrender.SinglestatWidget) {
-				mc.On("Sync", 19.14).Return(nil)
+				mc.On("Sync", "19.14").Return(nil)
 				mc.On("SetColor", "#000015").Return(nil)
 			},
 		},

@@ -3,12 +3,13 @@ package template_test
 import (
 	"testing"
 
-	"github.com/slok/grafterm/internal/view/template"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/slok/grafterm/internal/view/template"
 )
 
 func newData() template.Data {
-	return map[string]string{
+	return map[string]interface{}{
 		"__interval": "2m",
 		"__range":    "10m",
 		"__start":    "2019-04-19T08:38:59+02:00",
@@ -52,13 +53,13 @@ func TestDataCopy(t *testing.T) {
 			name: "Variables",
 			data: newData(),
 			transform: func(data template.Data) template.Data {
-				return data.WithData(map[string]string{
+				return data.WithData(map[string]interface{}{
 					"custom": "customized-on-test",
 					"newkey": "newVar",
 				})
 			},
 			expOriginal: newData(),
-			expTransformed: map[string]string{
+			expTransformed: map[string]interface{}{
 				"__interval": "2m",
 				"__range":    "10m",
 				"__start":    "2019-04-19T08:38:59+02:00",

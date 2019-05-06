@@ -208,13 +208,13 @@ func (a *App) getSyncConfig() syncConfig {
 }
 
 func (a *App) getDashboardVariableData() template.Data {
-	data := template.Data(map[string]string{
+	data := template.Data(map[string]interface{}{
 		"__range":          unit.DurationToSimpleString(a.cfg.RelativeTimeRange),
 		"__refresInterval": unit.DurationToSimpleString(a.cfg.RefreshInterval),
 	})
 
 	// Load variablers data from the dashboard scope.
-	dashboardData := map[string]string{}
+	dashboardData := map[string]interface{}{}
 	for vid, v := range a.variablers {
 		if v.Scope() == variable.ScopeDashboard {
 			dashboardData[vid] = v.GetValue()
@@ -227,7 +227,7 @@ func (a *App) getDashboardVariableData() template.Data {
 }
 
 func (a *App) getSyncVariableData(cfg syncConfig) template.Data {
-	data := map[string]string{
+	data := map[string]interface{}{
 		"__start": fmt.Sprintf("%v", cfg.timeRangeStart),
 		"__end":   fmt.Sprintf("%v", cfg.timeRangeEnd),
 	}

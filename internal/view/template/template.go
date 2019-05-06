@@ -7,12 +7,12 @@ import (
 
 // Data is the object stores the data to be templated in queries, labels, widgets,
 // titles...
-type Data map[string]string
+type Data map[string]interface{}
 
 // WithData returns the old data + new data in a new Data instance
-func (d Data) WithData(data map[string]string) Data {
+func (d Data) WithData(data map[string]interface{}) Data {
 	if d == nil {
-		d = map[string]string{}
+		d = map[string]interface{}{}
 	}
 
 	dc := d.deepCopy()
@@ -24,7 +24,7 @@ func (d Data) WithData(data map[string]string) Data {
 
 func (d Data) deepCopy() Data {
 	// Copy vars.
-	dc := map[string]string{}
+	dc := map[string]interface{}{}
 	for k, v := range d {
 		dc[k] = v
 	}
@@ -35,7 +35,7 @@ func (d Data) deepCopy() Data {
 // Render will render the template using the object data.
 func (d Data) Render(tpl string) string {
 	if d == nil {
-		d = map[string]string{}
+		d = map[string]interface{}{}
 	}
 
 	tmpl, err := template.New("").Parse(tpl)

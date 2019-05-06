@@ -77,7 +77,7 @@ type WidgetSource struct {
 // SinglestatWidgetSource represents a simple value widget.
 type SinglestatWidgetSource struct {
 	Query      Query       `json:"query,omitempty"`
-	TextFormat string      `json:"textFormat,omitempty"`
+	ValueText  string      `json:"valueText,omitempty"`
 	Thresholds []Threshold `json:"thresholds,omitempty"`
 }
 
