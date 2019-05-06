@@ -135,7 +135,11 @@ func (g *graph) transformToRenderable(cfg syncConfig, series []metricSeries, xLa
 	for _, serie := range series {
 		// Create the template data for each series form the sync template
 		// data (upper layer template data).
-		templateData := cfg.templateData.WithData(serie.series.Labels)
+		tplLabels := map[string]interface{}{}
+		for k, v := range serie.series.Labels {
+			tplLabels[k] = v
+		}
+		templateData := cfg.templateData.WithData(tplLabels)
 
 		// Init data.
 		values := make([]*render.Value, len(xLabels))
