@@ -31,7 +31,7 @@ type GaugeWidget interface {
 // and supports changing color.
 type SinglestatWidget interface {
 	Widget
-	Sync(value float64) error
+	Sync(text string) error
 	SetColor(hexColor string) error
 }
 

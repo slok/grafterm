@@ -1,8 +1,6 @@
 package termdash
 
 import (
-	"fmt"
-
 	"github.com/mum4k/termdash/cell"
 	"github.com/mum4k/termdash/container"
 	"github.com/mum4k/termdash/container/grid"
@@ -12,15 +10,10 @@ import (
 	"github.com/slok/grafterm/internal/model"
 )
 
-const (
-	defFormat = "%.2f"
-)
-
 // singlestat satisfies render.SinglestatWidget interface.
 type singlestat struct {
-	cfg     model.Widget
-	color   cell.Color
-	textFmt string
+	cfg   model.Widget
+	color cell.Color
 
 	widget  *segmentdisplay.SegmentDisplay
 	element grid.Element
@@ -33,12 +26,6 @@ func newSinglestat(cfg model.Widget) (*singlestat, error) {
 		return nil, err
 	}
 
-	// Create the segment display format.
-	textFmt := defFormat
-	if cfg.Singlestat.TextFormat != "" {
-		textFmt = cfg.Singlestat.TextFormat
-	}
-
 	// Create the element using the new widget.
 	element := grid.Widget(sd,
 		container.Border(linestyle.Light),
@@ -47,7 +34,6 @@ func newSinglestat(cfg model.Widget) (*singlestat, error) {
 
 	return &singlestat{
 		widget:  sd,
-		textFmt: textFmt,
 		color:   cell.ColorWhite,
 		cfg:     cfg,
 		element: element,
@@ -62,10 +48,10 @@ func (s *singlestat) GetWidgetCfg() model.Widget {
 	return s.cfg
 }
 
-func (s *singlestat) Sync(value float64) error {
+func (s *singlestat) Sync(text string) error {
 	chunks := []*segmentdisplay.TextChunk{
 		segmentdisplay.NewChunk(
-			fmt.Sprintf(s.textFmt, value),
+			text,
 			segmentdisplay.WriteCellOpts(cell.FgColor(s.color))),
 	}
 	err := s.widget.Write(chunks)

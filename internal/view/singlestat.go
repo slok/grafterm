@@ -10,6 +10,11 @@ import (
 	"github.com/slok/grafterm/internal/view/render"
 )
 
+const (
+	valueTemplateKey = "value"
+	defValueTemplate = "{{.value}}"
+)
+
 // singlestat is a widget that represents in text mode.
 type singlestat struct {
 	controller     controller.Controller
@@ -62,13 +67,13 @@ func (s *singlestat) sync(ctx context.Context, cfg syncConfig) error {
 	}
 
 	// Update the render view value.
-	err = s.rendererWidget.Sync(m.Value)
+	text := s.valueToText(cfg, m.Value)
+	err = s.rendererWidget.Sync(text)
 	if err != nil {
 		return fmt.Errorf("error setting value on render view widget: %s", err)
 	}
 
 	return nil
-
 }
 
 func (s *singlestat) changeWidgetColor(val float64) error {
@@ -96,4 +101,20 @@ func (s *singlestat) changeWidgetColor(val float64) error {
 	s.currentColor = color
 
 	return nil
+}
+
+// valueToText will use a templater to get the text. The value
+// obtained for the widget will be available under the described
+// key.`
+func (s *singlestat) valueToText(cfg syncConfig, value float64) string {
+	templateData := cfg.templateData.WithData(map[string]interface{}{
+		valueTemplateKey: value,
+	})
+
+	vTpl := s.cfg.Singlestat.ValueText
+	if vTpl == "" {
+		vTpl = defValueTemplate
+	}
+
+	return templateData.Render(vTpl)
 }

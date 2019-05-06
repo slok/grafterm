@@ -26,19 +26,19 @@ func TestWidgetDataMiddleware(t *testing.T) {
 	}{
 		{
 			name: "storing static data should add that data on every call to the sync",
-			data: map[string]string{
+			data: map[string]interface{}{
 				"name":     "Batman",
 				"realName": "Bruce",
 				"lastName": "Wayne",
 				"location": "Gotham",
 			},
 			cfg: syncConfig{
-				templateData: map[string]string{
+				templateData: map[string]interface{}{
 					"location":  "Arkham asylum",
 					"transport": "batmobile",
 				},
 			},
-			expData: map[string]string{
+			expData: map[string]interface{}{
 				"name":      "Batman",
 				"realName":  "Bruce",
 				"lastName":  "Wayne",

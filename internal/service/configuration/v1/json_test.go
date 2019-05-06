@@ -101,7 +101,7 @@ func TestJSONLoaderLoad(t *testing.T) {
 			{
 				"title": "widget2",
 				"singlestat": {
-					"textFormat": "%.02f",
+					"valueText": "{{.value}}",
 					"query": {
 						"expr": "testquery"
 					},
@@ -151,7 +151,7 @@ func TestJSONLoaderLoad(t *testing.T) {
 							Title: "widget2",
 							WidgetSource: model.WidgetSource{
 								Singlestat: &model.SinglestatWidgetSource{
-									TextFormat: "%.02f",
+									ValueText: "{{.value}}",
 									Query: model.Query{
 										Expr: "testquery",
 									},
