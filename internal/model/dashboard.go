@@ -1,6 +1,15 @@
 package model
 
-import "regexp"
+import (
+	"fmt"
+	"regexp"
+)
+
+// Defaults.
+const (
+	// defGridMaxWidth is the default grid width used when is not set.
+	defGridMaxWidth = 100
+)
 
 // Dashboard represents a dashboard.
 type Dashboard struct {
@@ -131,4 +140,222 @@ type SeriesOverride struct {
 type Legend struct {
 	Disable   bool `json:"disable,omitempty"`
 	RightSide bool `json:"rightSide,omitempty"`
+}
+
+// Validate validates the object model is correct.
+// A correct object means that also it will autofill the
+// required default attributes so the object ends in a
+// valid state.
+func (d *Dashboard) Validate() error {
+	err := d.Grid.validate()
+	if err != nil {
+		return err
+	}
+
+	for _, v := range d.Variables {
+		err := v.validate()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Validate individual widgets.
+	for _, w := range d.Widgets {
+		err := w.validate(*d)
+		if err != nil {
+			return err
+		}
+	}
+
+	// TODO(slok): Validate all widgets as a whole (for example total of grid)
+	return nil
+}
+
+func (g *Grid) validate() error {
+	if g.MaxWidth <= 0 {
+		g.MaxWidth = defGridMaxWidth
+	}
+	return nil
+}
+
+func (v Variable) validate() error {
+	if v.Name == "" {
+		return fmt.Errorf("variables should have a name")
+	}
+
+	// Variable type checks.
+	switch {
+	case v.VariableSource.Constant != nil:
+		c := v.VariableSource.Constant
+		if c.Value == "" {
+			return fmt.Errorf("%s constant variable needs a value", v.Name)
+		}
+	case v.VariableSource.Interval != nil:
+		i := v.VariableSource.Interval
+		if i.Steps <= 0 {
+			return fmt.Errorf("%s interval variable step should be > 0", v.Name)
+		}
+	default:
+		return fmt.Errorf("%s variable is empty, it should be of a specific type", v.Name)
+	}
+
+	return nil
+}
+
+func (w Widget) validate(d Dashboard) error {
+	err := w.GridPos.validate(d.Grid)
+	if err != nil {
+		return fmt.Errorf("error on %s widget grid position: %s", w.Title, err)
+	}
+
+	switch {
+	case w.Gauge != nil:
+		err := w.Gauge.validate()
+		if err != nil {
+			return fmt.Errorf("error on %s gauge widget: %s", w.Title, err)
+		}
+	case w.Singlestat != nil:
+		err := w.Singlestat.validate()
+		if err != nil {
+			return fmt.Errorf("error on %s singlestat widget: %s", w.Title, err)
+		}
+	case w.Graph != nil:
+		err := w.Graph.validate()
+		if err != nil {
+			return fmt.Errorf("error on %s graph widget: %s", w.Title, err)
+		}
+	}
+	return nil
+}
+
+func (g GridPos) validate(gr Grid) error {
+	if g.W <= 0 {
+		return fmt.Errorf("widget grid position should have a width")
+	}
+
+	if gr.FixedWidgets && g.X <= 0 {
+		return fmt.Errorf("widget grid position in a fixed grid should have am X position")
+	}
+
+	if gr.FixedWidgets && g.Y <= 0 {
+		return fmt.Errorf("widget grid position in a fixed grid should have am Y position")
+	}
+
+	return nil
+}
+
+func (g GaugeWidgetSource) validate() error {
+	err := g.Query.validate()
+	if err != nil {
+		return fmt.Errorf("query error on gauge widget: %s", err)
+	}
+
+	if g.PercentValue && g.Max <= g.Min {
+		return fmt.Errorf("a percent based gauge max should be greater than min")
+	}
+
+	err = validateThresholds(g.Thresholds)
+	if err != nil {
+		return fmt.Errorf("thresholds error on gauge widget: %s", err)
+	}
+
+	return nil
+}
+
+func (s SinglestatWidgetSource) validate() error {
+	if s.ValueText == "" {
+		return fmt.Errorf("singlestat can't have an empty value text")
+	}
+
+	err := s.Query.validate()
+	if err != nil {
+		return fmt.Errorf("query error on singlestat widget: %s", err)
+	}
+
+	err = validateThresholds(s.Thresholds)
+	if err != nil {
+		return fmt.Errorf("thresholds error on singlestat widget: %s", err)
+	}
+
+	return nil
+}
+
+func (g GraphWidgetSource) validate() error {
+	if len(g.Queries) <= 0 {
+		return fmt.Errorf("graph must have at least one query")
+	}
+
+	for _, q := range g.Queries {
+		err := q.validate()
+		if err != nil {
+			return err
+		}
+	}
+
+	sos, err := validateSeriesOverride(g.Visualization.SeriesOverride)
+	if err != nil {
+		return fmt.Errorf("series override error on graph widget: %s", err)
+	}
+	g.Visualization.SeriesOverride = sos
+
+	return nil
+}
+
+func (q Query) validate() error {
+	if q.Expr == "" {
+		return fmt.Errorf("query must have an expression")
+	}
+
+	if q.DatasourceID == "" {
+		return fmt.Errorf("query must have have a datosource ID")
+	}
+	return nil
+}
+
+func validateThresholds(ts []Threshold) error {
+	startValues := map[float64]struct{}{}
+	for _, t := range ts {
+		_, ok := startValues[t.StartValue]
+		if ok {
+			return fmt.Errorf("threshold start value settings can't be repeated in multiple thresholds")
+		}
+
+		startValues[t.StartValue] = struct{}{}
+	}
+
+	return nil
+}
+
+func (s SeriesOverride) validate() error {
+	if s.Regex == "" {
+		return fmt.Errorf("a graph override for series should have a regex")
+	}
+
+	return nil
+}
+
+func validateSeriesOverride(sos []SeriesOverride) ([]SeriesOverride, error) {
+	regexes := map[string]struct{}{}
+	for i, s := range sos {
+		err := s.validate()
+		if err != nil {
+			return sos, err
+		}
+
+		_, ok := regexes[s.Regex]
+		if ok {
+			return sos, fmt.Errorf("series override regex setting can't be repeated in multiple series override")
+		}
+		regexes[s.Regex] = struct{}{}
+
+		// Compile the regex.
+		re, err := regexp.Compile(s.Regex)
+		if err != nil {
+			return sos, err
+		}
+		s.CompiledRegex = re
+		sos[i] = s
+	}
+
+	return sos, nil
 }

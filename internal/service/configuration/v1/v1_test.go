@@ -1,145 +1,285 @@
 package v1_test
 
 import (
+	"io"
 	"regexp"
+	"sort"
+	"strings"
 	"testing"
 
-	"github.com/slok/grafterm/internal/model"
-	"github.com/slok/grafterm/internal/service/configuration/meta"
-	v1 "github.com/slok/grafterm/internal/service/configuration/v1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/configuration"
 )
 
-func getBase() v1.Configuration {
-	return v1.Configuration{
-		Meta: meta.Meta{Version: "v1"},
-		Datasources: []v1.Datasource{
-			model.Datasource{
-				ID:               "ds1",
-				DatasourceSource: model.DatasourceSource{Fake: &model.FakeDatasource{}},
+var (
+	goodJSON = `
+{
+  "version": "v1",
+  "datasources": {
+  	"gitlab": {
+      "prometheus": {
+        "address": "https://dashboards.gitlab.com/api/datasources/proxy/6/"
+      }
+	},
+	"ds": {
+      "prometheus": {
+        "address": "http://127.0.0.1:9090"
+      }
+    }
+  },
+  "dashboard": {
+    "variables": {
+      "env": {
+        "constant": {
+          "value": "gprd"
+        }
+      },
+      "interval": {
+        "interval": {
+          "steps": 50
+        }
+      }
+	},
+	"widgets": [
+		{
+        "title": "widget1",
+        "gridPos": { "w": 5, "x": 20, "y": 30 },
+        "gauge": {
+          "query": {
+            "datasourceID": "gitlab",
+            "expr": "avg_over_time(probe_success{env=\"{{.env}}\",monitor=\"default\",instance=\"https://gitlab.com\", job=\"blackbox-tls-redirect\"}[{{.interval}}])"
+		  },
+		  "percentValue": true,
+		  "min": 10,
+		  "max": 20,
+          "thresholds": [
+            { "color": "#d44a3a", "startValue": 10 },
+            { "color": "#2dc937", "startValue": 30 }
+          ]
+        }
+      },
+	  {
+        "title": "widget2",
+        "gridPos": { "w": 10, "x": 10, "y": 10 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "gitlab",
+            "expr": "avg_over_time(probe_success{env=\"{{.env}}\",monitor=\"default\",instance=\"https://gitlab.com\", job=\"blackbox-tls-redirect\"}[{{.interval}}])"
+          },
+          "valueText": "{{ if (lt .value 1.0) }}DOWN{{else}}UP{{end}}",
+          "thresholds": [
+            { "color": "#d44a3a" },
+            { "color": "#2dc937", "startValue": 1 }
+          ]
+        }
+	  },
+	  {
+        "title": "widget3",
+        "gridPos": { "w": 55, "x": 66, "y": 77 },
+		"graph": {
+		  "visualization": {
+		    "legend": {
+		      "disable": true,
+		      "rightSide": true
 			},
-			model.Datasource{
-				ID: "ds2",
-				DatasourceSource: model.DatasourceSource{Prometheus: &model.PrometheusDatasource{
-					Address: "http://127.0.0.1:9090",
+			"seriesOverride": [
+              {
+                "regex": "p99",
+                "color": "#c15c17"
+              },
+              {
+                "regex": "p95",
+                "color": "#f2c96d"
+              },
+              {
+                "regex": "p50",
+                "color": "#f9ba8f"
+              }
+            ]
+		  },
+		  "queries": [
+			{
+              "datasourceID": "ds",
+              "expr": "max(handler:http_request_duration_seconds_bucket:sum_rate2m_histogram_quantile_perc99)",
+              "legend": "p99"
+            },
+            {
+              "datasourceID": "ds",
+              "expr": "max(handler:http_request_duration_seconds_bucket:sum_rate2m_histogram_quantile_perc95)",
+              "legend": "p95"
+            },
+            {
+              "datasourceID": "ds",
+              "expr": "max(handler:http_request_duration_seconds_bucket:sum_rate2m_histogram_quantile_perc50)",
+              "legend": "p50"
+            }
+		  ]
+		}
+	  }
+	]
+  }
+}`
+
+	goodDashboard = model.Dashboard{
+		Grid: model.Grid{
+			MaxWidth: 100,
+		},
+		Variables: []model.Variable{
+			{
+				Name: "env",
+				VariableSource: model.VariableSource{Constant: &model.ConstantVariableSource{
+					Value: "gprd",
+				}},
+			},
+			{
+				Name: "interval",
+				VariableSource: model.VariableSource{Interval: &model.IntervalVariableSource{
+					Steps: 50,
 				}},
 			},
 		},
-		Dashboard: v1.Dashboard{
-			Grid: model.Grid{
-				MaxWidth: 24,
+		Widgets: []model.Widget{
+			{
+				Title:   "widget1",
+				GridPos: model.GridPos{W: 5, X: 20, Y: 30},
+				WidgetSource: model.WidgetSource{Gauge: &model.GaugeWidgetSource{
+					Query: model.Query{
+						DatasourceID: "gitlab",
+						Expr:         `avg_over_time(probe_success{env="{{.env}}",monitor="default",instance="https://gitlab.com", job="blackbox-tls-redirect"}[{{.interval}}])`,
+					},
+					PercentValue: true,
+					Max:          20,
+					Min:          10,
+					Thresholds: []model.Threshold{
+						{Color: "#d44a3a", StartValue: 10},
+						{Color: "#2dc937", StartValue: 30},
+					},
+				}},
 			},
-			Widgets: []model.Widget{
-				model.Widget{
-					Title: "widget1",
-					WidgetSource: model.WidgetSource{
-						Graph: &model.GraphWidgetSource{
-							Visualization: model.GraphVisualization{},
+			{
+				Title:   "widget2",
+				GridPos: model.GridPos{W: 10, X: 10, Y: 10},
+				WidgetSource: model.WidgetSource{Singlestat: &model.SinglestatWidgetSource{
+					Query: model.Query{
+						DatasourceID: "gitlab",
+						Expr:         `avg_over_time(probe_success{env="{{.env}}",monitor="default",instance="https://gitlab.com", job="blackbox-tls-redirect"}[{{.interval}}])`,
+					},
+					ValueText: "{{ if (lt .value 1.0) }}DOWN{{else}}UP{{end}}",
+					Thresholds: []model.Threshold{
+						{Color: "#d44a3a"},
+						{Color: "#2dc937", StartValue: 1},
+					},
+				}},
+			},
+			{
+				Title:   "widget3",
+				GridPos: model.GridPos{W: 55, X: 66, Y: 77},
+				WidgetSource: model.WidgetSource{Graph: &model.GraphWidgetSource{
+					Visualization: model.GraphVisualization{
+						Legend: model.Legend{
+							Disable:   true,
+							RightSide: true,
+						},
+						SeriesOverride: []model.SeriesOverride{
+							{Regex: "p99", Color: "#c15c17", CompiledRegex: regexp.MustCompile("p99")},
+							{Regex: "p95", Color: "#f2c96d", CompiledRegex: regexp.MustCompile("p95")},
+							{Regex: "p50", Color: "#f9ba8f", CompiledRegex: regexp.MustCompile("p50")},
 						},
 					},
-				},
+					Queries: []model.Query{
+						{
+							DatasourceID: "ds",
+							Expr:         `max(handler:http_request_duration_seconds_bucket:sum_rate2m_histogram_quantile_perc99)`,
+							Legend:       "p99",
+						},
+						{
+							DatasourceID: "ds",
+							Expr:         `max(handler:http_request_duration_seconds_bucket:sum_rate2m_histogram_quantile_perc95)`,
+							Legend:       "p95",
+						},
+						{
+							DatasourceID: "ds",
+							Expr:         `max(handler:http_request_duration_seconds_bucket:sum_rate2m_histogram_quantile_perc50)`,
+							Legend:       "p50",
+						},
+					},
+				}},
 			},
 		},
 	}
-}
+	goodDatasources = []model.Datasource{
+		{
+			ID: "ds",
+			DatasourceSource: model.DatasourceSource{Prometheus: &model.PrometheusDatasource{
+				Address: "http://127.0.0.1:9090",
+			}},
+		},
+		{
+			ID: "gitlab",
+			DatasourceSource: model.DatasourceSource{Prometheus: &model.PrometheusDatasource{
+				Address: "https://dashboards.gitlab.com/api/datasources/proxy/6/",
+			}},
+		},
+	}
+)
 
-func TestValidate(t *testing.T) {
+func TestLoadConfiguration(t *testing.T) {
 	tests := []struct {
-		name   string
-		cfg    func() v1.Configuration
-		exp    func() v1.Configuration
-		expErr bool
+		name           string
+		config         func() io.Reader
+		loader         func() configuration.Loader
+		expDashboard   model.Dashboard
+		expDatasources []model.Datasource
+		expErr         bool
 	}{
 		{
-			name: "Everything correct.",
-			cfg: func() v1.Configuration {
-				return getBase()
+			name: "Invalid JSON should return an error",
+			loader: func() configuration.Loader {
+				return &configuration.JSONLoader{}
 			},
-			exp: func() v1.Configuration {
-				return getBase()
-			},
-		},
-		{
-			name: "Default maxWidth.",
-			cfg: func() v1.Configuration {
-				cfg := getBase()
-				cfg.Dashboard.Grid.MaxWidth = 0
-				return cfg
-			},
-			exp: func() v1.Configuration {
-				cfg := getBase()
-				cfg.Dashboard.Grid.MaxWidth = 100
-				return cfg
-			},
-		},
-		{
-			name: "graph visualization regex should autocomplete with the compiled the regex.",
-			cfg: func() v1.Configuration {
-				base := getBase()
-				base.Dashboard.Widgets[0].Graph.Visualization.SeriesOverride = []model.SeriesOverride{
-					model.SeriesOverride{
-						Regex: ".*",
-					},
-				}
-				return base
-			},
-			exp: func() v1.Configuration {
-				base := getBase()
-				base.Dashboard.Widgets[0].Graph.Visualization.SeriesOverride = []model.SeriesOverride{
-					model.SeriesOverride{
-						Regex:         ".*",
-						CompiledRegex: regexp.MustCompile(".*"),
-					},
-				}
-				return base
-			},
-		},
-		{
-			name: "Multiple datasource with the same ID should error.",
-			cfg: func() v1.Configuration {
-				base := getBase()
-				base.Datasources = append(base.Datasources, model.Datasource{
-					ID:               "ds1",
-					DatasourceSource: model.DatasourceSource{Fake: &model.FakeDatasource{}},
-				})
-
-				return base
-			},
-			exp: func() v1.Configuration {
-				return getBase()
+			config: func() io.Reader {
+				return strings.NewReader(`{"version": "v1",}`)
 			},
 			expErr: true,
 		},
 		{
-			name: "graph series visualization wrong regex should error.",
-			cfg: func() v1.Configuration {
-				base := getBase()
-				base.Dashboard.Widgets[0].Graph.Visualization.SeriesOverride = []model.SeriesOverride{
-					model.SeriesOverride{
-						Regex: "8-(",
-					},
-				}
-
-				return base
+			name: "Valid JSON should return an correct dashboards",
+			loader: func() configuration.Loader {
+				return &configuration.JSONLoader{}
 			},
-			exp: func() v1.Configuration {
-				return getBase()
+			config: func() io.Reader {
+				return strings.NewReader(goodJSON)
 			},
-			expErr: true,
+			expDashboard:   goodDashboard,
+			expDatasources: goodDatasources,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			assert := assert.New(t)
+			require := require.New(t)
 
-			exp := test.exp()
-			got := test.cfg()
-			err := got.Validate()
+			loader := test.loader()
+			gotcfg, err := loader.Load(test.config())
+
 			if test.expErr {
 				assert.Error(err)
 			} else if assert.NoError(err) {
-				assert.Equal(exp, got)
+				gotDashboard, err := gotcfg.Dashboard()
+				require.NoError(err)
+				sort.Slice(gotDashboard.Variables, func(i, j int) bool { return gotDashboard.Variables[i].Name < gotDashboard.Variables[j].Name })
+				sort.Slice(gotDashboard.Widgets, func(i, j int) bool { return gotDashboard.Widgets[i].Title < gotDashboard.Widgets[j].Title })
+				assert.Equal(test.expDashboard, gotDashboard)
+
+				gotDatasources, err := gotcfg.Datasources()
+				// Sort arrays before test.
+				sort.Slice(gotDatasources, func(i, j int) bool { return gotDatasources[i].ID < gotDatasources[j].ID })
+				require.NoError(err)
+				assert.Equal(test.expDatasources, gotDatasources)
 			}
 		})
 	}
