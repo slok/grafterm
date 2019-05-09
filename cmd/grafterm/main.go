@@ -12,7 +12,6 @@ import (
 
 	"github.com/slok/grafterm/internal/controller"
 	"github.com/slok/grafterm/internal/service/configuration"
-	configurationv1 "github.com/slok/grafterm/internal/service/configuration/v1"
 	"github.com/slok/grafterm/internal/service/log"
 	metric "github.com/slok/grafterm/internal/service/metric/datasource"
 	metricmiddleware "github.com/slok/grafterm/internal/service/metric/middleware"
@@ -58,8 +57,12 @@ func (m *Main) Run() error {
 		return err
 	}
 
+	dss, err := cfg.Datasources()
+	if err != nil {
+		return err
+	}
 	gatherer, err := metric.NewGatherer(metric.ConfigGatherer{
-		Datasources: cfg.GetDatasources(),
+		Datasources: dss,
 	})
 	if err != nil {
 		return err
@@ -123,10 +126,14 @@ func (m *Main) Run() error {
 			RelativeTimeRange: relTR,
 		}
 		app := view.NewApp(appcfg, ctrl, renderer, m.logger)
+		ds, err := cfg.Dashboard()
+		if err != nil {
+			return err
+		}
 
 		g.Add(
 			func() error {
-				err := app.Run(ctx, cfg.GetDashboard())
+				err := app.Run(ctx, ds)
 				if err != nil {
 					return err
 				}
@@ -149,8 +156,7 @@ func (m *Main) loadConfiguration() (configuration.Configuration, error) {
 	}
 	defer f.Close()
 
-	// For now only v1 supported.
-	cfg, err := configurationv1.JSONLoader{}.Load(f)
+	cfg, err := configuration.JSONLoader{}.Load(f)
 	if err != nil {
 		return nil, err
 	}
