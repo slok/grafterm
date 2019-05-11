@@ -1,4 +1,4 @@
-# Grafterm
+# Grafterm [![CircleCI][circleci-image]][circleci-url]
 
 Grafterm is an application to load dashboards on the terminal, you could think of grafterm as a simplified version of [Grafana] but for terminal.
 
@@ -41,6 +41,8 @@ Open an issue or a PR to support more datasource types.
 
 This project would not be possible without the effort of many people and projects but specially [Grafana] for the inspiration, ideas and the project itself, and [Termdash] for the rendering of all those fancy graphs on the terminal.
 
+[circleci-image]: https://circleci.com/gh/slok/grafterm.svg?style=svg
+[circleci-url]: https://circleci.com/gh/slok/grafterm
 [grafana]: https://grafana.com/
 [termdash]: https://github.com/mum4k/termdash
 [releases]: https://github.com/slok/grafterm/releases
