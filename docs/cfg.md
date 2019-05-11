@@ -306,13 +306,13 @@ The legend has the ability to use templating and has inside loaded the metric la
 
 ### Units
 
-Some grafterm have unit support. The available unit at this moment are:
+Some widgets have unit formatting support, these are the ones that can be used:
 
-- Default: It will fallback to `short`.
+- ``(Default): It will fallback to `short`.
 - `short`: Will make the values in short format, e.g:
   - `1000`:`1 K`
   - `1000000`: `1 Mil`
-- `none`: The flaot as it is.
+- `none`: The value as it is.
 - `percent`: Will add a `%` prefix, e.g:
   - `100`: `100%`
   - `20`: `20%`
@@ -330,5 +330,7 @@ Some grafterm have unit support. The available unit at this moment are:
   - `1024`: `1 KiB`
   - `1.405e+8`: `134 MiB`
   - `4.508e+13`: `41 TiB`
+
+Units come in combination with the `decimals` settings.
 
 [dashboard-examples]: dashboard-examples

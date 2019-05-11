@@ -7,8 +7,10 @@ import (
 	"time"
 )
 
-// Formatter knows how to interact with formats give
-// string representation
+// Formatter knows how to interact with different values
+// to give then a format and a representation.
+// They are based on units that can do the conversion to
+// other units and represent them in the returning string.
 type Formatter func(value float64, decimals int) string
 
 // NewUnitFormatter is a factory that selects the correct formatter
@@ -52,10 +54,7 @@ func noneFormatter(value float64, decimals int) string {
 // Examples:
 //	- 100: 100%
 //	- 1029.12: 9876.12%
-func percentFormatter(value float64, decimals int) string {
-	f := suffixDecimalFormat(decimals, "%")
-	return fmt.Sprintf(f, value)
-}
+var percentFormatter = newSuffixFormatter("%")
 
 // ratioFormatter returns the value with the
 // percent suffix and assumes is a ratio value
@@ -153,9 +152,8 @@ const (
 // quantity in a pretty format style.
 // supports: B, KiB, MiB, GiB, TiB, PiB, EiB, ZiB, YiB.
 // Examples:
-//	- 1: 1s
-//	- 0.1: 100ms
-//  - 300: 5m
+//	- 35: 35 B
+//	- 1024: 1 KiB
 var bytesFormatter = newRangedFormatter([]rangeStep{
 	{max: kibibyte, base: 1, suffix: " B"},
 	{max: mebibyte, base: kibibyte, suffix: " KiB"},
@@ -183,8 +181,8 @@ const (
 // high numbers adding a suffix.
 // supports: K, Mil, Bil, tri, Quadr, Quint, Sext, Sept.
 // Examples:
-// 	- 1000 = 1k
-//  - 2000000 = 2Mil
+// 	- 1000 = 1 k
+//  - 2000000 = 2 Mil
 var shortFormatter = newRangedFormatter([]rangeStep{
 	{max: shortK, base: 1, suffix: ""},
 	{max: shortMil, base: shortK, suffix: " K"},
