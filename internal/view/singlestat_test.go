@@ -33,7 +33,12 @@ func TestSinglestatWidget(t *testing.T) {
 			},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
-					Singlestat: &model.SinglestatWidgetSource{},
+					Singlestat: &model.SinglestatWidgetSource{
+						ValueRepresentation: model.ValueRepresentation{
+							Unit:     "none",
+							Decimals: 2,
+						},
+					},
 				},
 			},
 			exp: func(mc *mrender.SinglestatWidget) {
@@ -76,6 +81,10 @@ func TestSinglestatWidget(t *testing.T) {
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
 					Singlestat: &model.SinglestatWidgetSource{
+						ValueRepresentation: model.ValueRepresentation{
+							Unit:     "none",
+							Decimals: 2,
+						},
 						Query: model.Query{
 							Expr: "this_is_a_test[{{ .testInterval }}]",
 						},
@@ -97,6 +106,10 @@ func TestSinglestatWidget(t *testing.T) {
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
 					Singlestat: &model.SinglestatWidgetSource{
+						ValueRepresentation: model.ValueRepresentation{
+							Unit:     "none",
+							Decimals: 2,
+						},
 						Thresholds: []model.Threshold{
 							{Color: "#000010", StartValue: 10},
 							{Color: "#000020", StartValue: 20},
@@ -109,6 +122,20 @@ func TestSinglestatWidget(t *testing.T) {
 			exp: func(mc *mrender.SinglestatWidget) {
 				mc.On("Sync", "19.14").Return(nil)
 				mc.On("SetColor", "#000015").Return(nil)
+			},
+		},
+		{
+			name: "A singlestat without unit should fallback to the default unit.",
+			controllerMetric: &model.Metric{
+				Value: 192312312321.21,
+			},
+			cfg: model.Widget{
+				WidgetSource: model.WidgetSource{
+					Singlestat: &model.SinglestatWidgetSource{},
+				},
+			},
+			exp: func(mc *mrender.SinglestatWidget) {
+				mc.On("Sync", "192 Bil").Return(nil)
 			},
 		},
 	}

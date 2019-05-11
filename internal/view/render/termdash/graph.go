@@ -12,6 +12,7 @@ import (
 	"github.com/mum4k/termdash/widgets/text"
 
 	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/unit"
 	"github.com/slok/grafterm/internal/view/render"
 )
 
@@ -39,6 +40,11 @@ type graph struct {
 }
 
 func newGraph(cfg model.Widget) (*graph, error) {
+	vf, err := termdashValueFormatter(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	// Create the Graphwidget.
 	// TODO(slok): Allow configuring the color of the axis.
 	lc, err := linechart.New(
@@ -46,6 +52,7 @@ func newGraph(cfg model.Widget) (*graph, error) {
 		linechart.YLabelCellOpts(cell.FgColor(cell.ColorNumber(yAxisLabelsColor))),
 		linechart.XLabelCellOpts(cell.FgColor(cell.ColorNumber(xAxisLabelsColor))),
 		linechart.YAxisAdaptive(),
+		linechart.YAxisFormattedValues(vf),
 	)
 	if err != nil {
 		return nil, err
@@ -68,6 +75,28 @@ func newGraph(cfg model.Widget) (*graph, error) {
 		widgetLegend: txt,
 		cfg:          cfg,
 		element:      element,
+	}, nil
+}
+
+// termdashValueFormatter will get a termdashValueFormatter based
+// on the widget configuration.
+func termdashValueFormatter(cfg model.Widget) (linechart.ValueFormatter, error) {
+	axisUnit := cfg.Graph.Visualization.YAxis.Unit
+	axisDecimals := cfg.Graph.Visualization.YAxis.Decimals
+
+	f, err := unit.NewUnitFormatter(axisUnit)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO(slok): auto decimals.
+	// If units by default use default decimals.
+	if axisUnit == "" && axisDecimals == 0 {
+		axisDecimals = 2
+	}
+
+	return func(value float64) string {
+		return f(value, axisDecimals)
 	}, nil
 }
 
@@ -174,7 +203,7 @@ func (g *graph) syncGraph(series render.Series, color cell.Color) error {
 	// Sync widget.
 	err := g.widgetGraph.Series(series.Label, values,
 		linechart.SeriesCellOpts(cell.FgColor(color)),
-		linechart.SeriesXLabels(g.xLabelsSliceToMap(series.XLabels)))
+		linechart.SeriesXLabels(xLabelsSliceToMap(series.XLabels)))
 	if err != nil {
 		return err
 	}
@@ -210,7 +239,7 @@ func (g *graph) GetGraphPointQuantity() int {
 	return g.widgetGraph.ValueCapacity()
 }
 
-func (g *graph) xLabelsSliceToMap(labels []string) map[int]string {
+func xLabelsSliceToMap(labels []string) map[int]string {
 	mlabel := map[int]string{}
 	for i, label := range labels {
 		mlabel[i] = label
