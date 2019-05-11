@@ -3,6 +3,8 @@ package model
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/slok/grafterm/internal/service/unit"
 )
 
 // Defaults.
@@ -85,9 +87,10 @@ type WidgetSource struct {
 
 // SinglestatWidgetSource represents a simple value widget.
 type SinglestatWidgetSource struct {
-	Query      Query       `json:"query,omitempty"`
-	ValueText  string      `json:"valueText,omitempty"`
-	Thresholds []Threshold `json:"thresholds,omitempty"`
+	ValueRepresentation `json:",inline"`
+	Query               Query       `json:"query,omitempty"`
+	ValueText           string      `json:"valueText,omitempty"`
+	Thresholds          []Threshold `json:"thresholds,omitempty"`
 }
 
 // GaugeWidgetSource represents a simple value widget in donut format.
@@ -126,6 +129,7 @@ type Threshold struct {
 type GraphVisualization struct {
 	SeriesOverride []SeriesOverride `json:"seriesOverride,omitempty"`
 	Legend         Legend           `json:"legend,omitempty"`
+	YAxis          YAxis            `json:"yAxis,omitempty"`
 }
 
 // SeriesOverride will override visualization based on
@@ -140,6 +144,17 @@ type SeriesOverride struct {
 type Legend struct {
 	Disable   bool `json:"disable,omitempty"`
 	RightSide bool `json:"rightSide,omitempty"`
+}
+
+// YAxis controls the YAxis of a widget.
+type YAxis struct {
+	ValueRepresentation `json:",inline"`
+}
+
+// ValueRepresentation controls the representation of a value.
+type ValueRepresentation struct {
+	Unit     string `json:"unit,omitempty"`
+	Decimals int    `json:"decimals,omitempty"`
 }
 
 // Validate validates the object model is correct.
@@ -263,13 +278,14 @@ func (g GaugeWidgetSource) validate() error {
 }
 
 func (s SinglestatWidgetSource) validate() error {
-	if s.ValueText == "" {
-		return fmt.Errorf("singlestat can't have an empty value text")
-	}
-
 	err := s.Query.validate()
 	if err != nil {
 		return fmt.Errorf("query error on singlestat widget: %s", err)
+	}
+
+	err = s.ValueRepresentation.validate()
+	if err != nil {
+		return err
 	}
 
 	err = validateThresholds(s.Thresholds)
@@ -298,6 +314,11 @@ func (g GraphWidgetSource) validate() error {
 	}
 	g.Visualization.SeriesOverride = sos
 
+	err = g.Visualization.YAxis.validate()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -321,6 +342,23 @@ func validateThresholds(ts []Threshold) error {
 		}
 
 		startValues[t.StartValue] = struct{}{}
+	}
+
+	return nil
+}
+
+func (y YAxis) validate() error {
+	err := y.ValueRepresentation.validate()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (v ValueRepresentation) validate() error {
+	_, err := unit.NewUnitFormatter(v.Unit)
+	if err != nil {
+		return fmt.Errorf("%s is an invalid unit", v.Unit)
 	}
 
 	return nil

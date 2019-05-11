@@ -65,6 +65,8 @@ var (
         "title": "widget2",
         "gridPos": { "w": 10, "x": 10, "y": 10 },
         "singlestat": {
+					"unit": "second",
+					"decimals": 2,
           "query": {
             "datasourceID": "gitlab",
             "expr": "avg_over_time(probe_success{env=\"{{.env}}\",monitor=\"default\",instance=\"https://gitlab.com\", job=\"blackbox-tls-redirect\"}[{{.interval}}])"
@@ -98,7 +100,11 @@ var (
                 "regex": "p50",
                 "color": "#f9ba8f"
               }
-            ]
+			],
+			"yAxis": {
+				"unit": "second",
+				"decimals": 1
+			}
 		  },
 		  "queries": [
 			{
@@ -168,6 +174,10 @@ var (
 						Expr:         `avg_over_time(probe_success{env="{{.env}}",monitor="default",instance="https://gitlab.com", job="blackbox-tls-redirect"}[{{.interval}}])`,
 					},
 					ValueText: "{{ if (lt .value 1.0) }}DOWN{{else}}UP{{end}}",
+					ValueRepresentation: model.ValueRepresentation{
+						Unit:     "second",
+						Decimals: 2,
+					},
 					Thresholds: []model.Threshold{
 						{Color: "#d44a3a"},
 						{Color: "#2dc937", StartValue: 1},
@@ -187,6 +197,12 @@ var (
 							{Regex: "p99", Color: "#c15c17", CompiledRegex: regexp.MustCompile("p99")},
 							{Regex: "p95", Color: "#f2c96d", CompiledRegex: regexp.MustCompile("p95")},
 							{Regex: "p50", Color: "#f9ba8f", CompiledRegex: regexp.MustCompile("p50")},
+						},
+						YAxis: model.YAxis{
+							ValueRepresentation: model.ValueRepresentation{
+								Unit:     "second",
+								Decimals: 1,
+							},
 						},
 					},
 					Queries: []model.Query{

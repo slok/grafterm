@@ -7,7 +7,9 @@ import (
 
 	"github.com/slok/grafterm/internal/controller"
 	"github.com/slok/grafterm/internal/model"
+	"github.com/slok/grafterm/internal/service/unit"
 	"github.com/slok/grafterm/internal/view/render"
+	"github.com/slok/grafterm/internal/view/template"
 )
 
 const (
@@ -67,7 +69,10 @@ func (s *singlestat) sync(ctx context.Context, cfg syncConfig) error {
 	}
 
 	// Update the render view value.
-	text := s.valueToText(cfg, m.Value)
+	text, err := s.valueToText(cfg, m.Value)
+	if err != nil {
+		return fmt.Errorf("error rendering value: %s", err)
+	}
 	err = s.rendererWidget.Sync(text)
 	if err != nil {
 		return fmt.Errorf("error setting value on render view widget: %s", err)
@@ -106,15 +111,31 @@ func (s *singlestat) changeWidgetColor(val float64) error {
 // valueToText will use a templater to get the text. The value
 // obtained for the widget will be available under the described
 // key.`
-func (s *singlestat) valueToText(cfg syncConfig, value float64) string {
-	templateData := cfg.templateData.WithData(map[string]interface{}{
-		valueTemplateKey: value,
-	})
+func (s *singlestat) valueToText(cfg syncConfig, value float64) (string, error) {
+	var templateData template.Data
+
+	// If we have a unit set transform.
+	// If unit is unset and value text template neither then apply default
+	// unit transformation.
+	wcfg := s.cfg.Singlestat
+	if wcfg.Unit != "" || (wcfg.Unit == "" && wcfg.ValueText == "") {
+		f, err := unit.NewUnitFormatter(wcfg.Unit)
+		if err != nil {
+			return "", err
+		}
+		templateData = cfg.templateData.WithData(map[string]interface{}{
+			valueTemplateKey: f(value, wcfg.Decimals),
+		})
+	} else {
+		templateData = cfg.templateData.WithData(map[string]interface{}{
+			valueTemplateKey: value,
+		})
+	}
 
 	vTpl := s.cfg.Singlestat.ValueText
 	if vTpl == "" {
 		vTpl = defValueTemplate
 	}
 
-	return templateData.Render(vTpl)
+	return templateData.Render(vTpl), nil
 }

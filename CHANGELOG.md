@@ -4,6 +4,9 @@
 
 ### Added
 
+- Unit formatters for time, RPS, percent and ratios.
+- Unit and decimals on the graph widget Y-axis.
+- Unit and decimals on the singlestat widget.
 - MaxWidth option that sets the horizontal scale of the grid.
 - Widget grid fixed mode.
 - Widget grid adaptive mode.

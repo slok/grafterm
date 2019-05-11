@@ -78,6 +78,12 @@ func getBaseDashboard() model.Dashboard {
 							model.SeriesOverride{Regex: "4..", Color: "#FFF002", CompiledRegex: regexp.MustCompile("4..")},
 							model.SeriesOverride{Regex: "5..", Color: "#FFF003", CompiledRegex: regexp.MustCompile("5..")},
 						},
+						YAxis: model.YAxis{
+							ValueRepresentation: model.ValueRepresentation{
+								Unit:     "reqps",
+								Decimals: 2,
+							},
+						},
 					},
 				}},
 			},
@@ -247,17 +253,6 @@ func TestValidateDashboard(t *testing.T) {
 
 		// Singlestat widget.
 		{
-			name: "A singlestat widget should have a value text.",
-			dashboard: func() model.Dashboard {
-				d := getBaseDashboard()
-				w := d.Widgets[1]
-				w.Singlestat.ValueText = ""
-				d.Widgets[1] = w
-				return d
-			},
-			expErr: true,
-		},
-		{
 			name: "A singlestat widget with a query should have an expression.",
 			dashboard: func() model.Dashboard {
 				d := getBaseDashboard()
@@ -293,6 +288,17 @@ func TestValidateDashboard(t *testing.T) {
 			},
 			expErr: true,
 		},
+		{
+			name: "A singlestat widget should have a valid unit.",
+			dashboard: func() model.Dashboard {
+				d := getBaseDashboard()
+				w := d.Widgets[1]
+				w.Singlestat.Unit = "unknown"
+				d.Widgets[1] = w
+				return d
+			},
+			expErr: true,
+		},
 
 		// Graph widget.
 		{
@@ -323,6 +329,17 @@ func TestValidateDashboard(t *testing.T) {
 				d := getBaseDashboard()
 				w := d.Widgets[2]
 				w.Graph.Queries = append(w.Graph.Queries, model.Query{Expr: "query", Legend: "test", DatasourceID: ""})
+				d.Widgets[2] = w
+				return d
+			},
+			expErr: true,
+		},
+		{
+			name: "A graph widget should have a valid unit on the Y-axis.",
+			dashboard: func() model.Dashboard {
+				d := getBaseDashboard()
+				w := d.Widgets[2]
+				w.Graph.Visualization.YAxis.Unit = "unknown"
 				d.Widgets[2] = w
 				return d
 			},
