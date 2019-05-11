@@ -190,6 +190,8 @@ The singlestat acts similar to the Gauge, it's realtime and accepts thresholds b
 ```json
 "singlestat": {
     "query": {},
+    "unit": "bytes",
+    "decimals": 3,
     "valueText": "{{.value}}",
     "thresholds": [
         {
@@ -216,6 +218,14 @@ Examples:
 - Print with 2 decimals: `{{ printf "%.2f" .value }}`
 - Print DOWN if value `<1` and UP on `>=1`: `{{ if (lt .value 1.0) }}DOWN{{else}}UP{{end}}`
 
+##### `unit`
+
+Will convert the value to the unit text representation. Check `unit` section in this same doc.
+
+##### `decimals`
+
+The number of decimals used for the representation when the unit format is used.
+
 #### Graph
 
 This widget graphs different metric series in a range. It accepts multiple queries that will be aggregated on the same graph. A single query can be rendered with multiple series (depending on the returned results).
@@ -226,6 +236,10 @@ This widget graphs different metric series in a range. It accepts multiple queri
         "legend": {
             "disable": false,
             "rightSide": true
+        },
+        "yAxis": {
+          "unit": "seconds",
+          "decimals": 0
         },
         "seriesOverride": [
             {
@@ -258,6 +272,13 @@ The setting that can be override at this moment are:
 
 - `color`: The color of the displayed series.
 
+##### `visualization.yAxis`
+
+In this block the settings that represent the format of the y axis are customized.
+
+- `unit`: Will convert the value to the unit text representation. Check `unit` section in this same doc.
+- `decimals`: The number of decimals used for the representation when the unit format is used.
+
 ### Templating
 
 Templating of strings use golang built in template. You can use variables of different kinds on different parts of the dashboard.
@@ -282,5 +303,32 @@ Is composed of a datasource, a legend representation and an expression. The expr
 ```
 
 The legend has the ability to use templating and has inside loaded the metric labels obtained by the datasource kind.
+
+### Units
+
+Some grafterm have unit support. The available unit at this moment are:
+
+- Default: It will fallback to `short`.
+- `short`: Will make the values in short format, e.g:
+  - `1000`:`1 K`
+  - `1000000`: `1 Mil`
+- `none`: The flaot as it is.
+- `percent`: Will add a `%` prefix, e.g:
+  - `100`: `100%`
+  - `20`: `20%`
+- `ratio`: Conversion values from 0-1 to percent format, e.g:
+  - `0.5`: `50%`
+  - `2.1`: `210%`
+- `seconds`: Will convert to a single unit pretty duration form, is based on second unit, e.g:
+  - `300`: `5m`
+  - `10`: `10s`
+  - `0.3`: `300ms`
+  - `61200`: `17h`
+  - `432000`: `5d`
+- `reqps`: Will add the `reqps` suffix.
+- `bytes`: based value in bytes will convert to a pretty format, e.g:
+  - `1024`: `1 KiB`
+  - `1.405e+8`: `134 MiB`
+  - `4.508e+13`: `41 TiB`
 
 [dashboard-examples]: dashboard-examples
