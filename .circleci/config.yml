@@ -5,7 +5,7 @@ jobs:
       - image: circleci/golang:1.12
         environment:
           GO111MODULE: "on"
-          GOPROXY: "https://goproxy.io"
+          GOPROXY: https://gocenter.io
     working_directory: /go/src/github.com/slok/grafterm
     steps:
       - checkout

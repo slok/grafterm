@@ -7,6 +7,8 @@ RUN apk --no-cache add \
     git \
     bash
 
+ENV GOPROXY=https://gocenter.io
+
 # Mock creator
 RUN go get -u github.com/vektra/mockery/.../
 
