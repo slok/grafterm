@@ -118,7 +118,7 @@ func (g *graph) createIndexedSlices(start, end time.Time, step time.Duration, ca
 	// TODO(slok): Calculate the best time format.
 	format := unit.TimeRangeTimeStringFormat(end.Sub(start), capacity)
 	for i := 0; i < capacity; i++ {
-		t := start.Add(time.Duration(i) * step)
+		t := start.Add(time.Duration(i) * step).Local()
 		xLabels[i] = t.Format(format)
 		indexedTime[i] = t
 	}
