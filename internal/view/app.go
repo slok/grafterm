@@ -24,7 +24,7 @@ type AppConfig struct {
 	TimeRangeStart    time.Time // Fixed optional time.
 	TimeRangeEnd      time.Time // Fixed optional time.
 	RelativeTimeRange time.Duration
-	// OverideVariables have priority over all variables and will override the
+	// OverrideVariables have priority over all variables and will override the
 	// loaded variables in the dashboard.
 	OverrideVariables map[string]string
 }
@@ -180,7 +180,7 @@ func (a *App) createWidgets(rws []render.Widget) []widget {
 
 		// Dashboard data.
 		dashboardData := a.getDashboardVariableData()
-		overrideData := a.getOverrideData()
+		overrideData := a.getOverrideVariableData()
 
 		// Widget middlewares.
 		w = withWidgetDataMiddleware(dashboardData, overrideData, w) // Assign static data to widget.
@@ -230,7 +230,7 @@ func (a *App) getDashboardVariableData() template.Data {
 	return data
 }
 
-func (a *App) getOverrideData() template.Data {
+func (a *App) getOverrideVariableData() template.Data {
 	od := map[string]interface{}{}
 	for k, v := range a.cfg.OverrideVariables {
 		od[k] = v

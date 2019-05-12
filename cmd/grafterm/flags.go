@@ -22,7 +22,7 @@ const (
 	descLogPath           = "the path where the log output will be written"
 	descRelativeTimeRange = "relative time range (from now) for the dashboard time range"
 	descDebug             = "enable debug mode, on debug mode it will print logs to the desired output"
-	descVar               = "repeatable flag that will overwrite the variable defined on the dashboard (in 'key=value' form)"
+	descVar               = "repeatable flag that will override the variable defined on the dashboard (in 'key=value' form)"
 )
 
 type flags struct {

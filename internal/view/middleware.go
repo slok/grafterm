@@ -8,22 +8,20 @@ import (
 
 // withWidgetDataMiddleware controls the variables data
 // the widget receives, it wraps any widget and will
-// inject this data variables the widget will receive so the
-// widget doesn't need to store this data.
+// mutate the variable data (updating, adding, deleting...)
+// the widget receives on every sync.
 //
 // It has the static data the widget will receive on all
 // the syncs, this way the widget doesn't need to store
 // the static data.
 //
-// It also controls the data that the user asked to override
-// (for example via cmd flags) on every data variables received
-// on each sync.
+// It also controls the data that the user wants to override
+// (for example via cmd flags).
 //
 // Priority chain.
-// 1- overrideData
+// 1- OverrideData
 // 2- SyncData
 // 3- StaticData
-
 func withWidgetDataMiddleware(data template.Data, overrideData template.Data, next widget) widget {
 	return &widgetDataMiddleware{
 		staticData:   data,
