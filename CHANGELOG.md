@@ -4,6 +4,7 @@
 
 ### Added
 
+- `var` repeatable flag to override dashboard variables.
 - Unit formatters for time, RPS, percent and ratios.
 - Unit and decimals on the graph widget Y-axis.
 - Unit and decimals on the singlestat widget.

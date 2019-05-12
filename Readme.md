@@ -1,14 +1,16 @@
 # Grafterm [![CircleCI][circleci-image]][circleci-url]
 
-Grafterm is an application to load dashboards on the terminal, you could think of grafterm as a simplified version of [Grafana] but for terminal.
+Visualize metrics dashboards on the terminal, like a simplified and minimalist version of [Grafana] for terminal.
 
 ## Features
 
 - Multiple widgets (graph, singlestat, gauge).
 - Multiple datasources usage (including aggregation).
-- Extensible metrics implementation (Prometheus included).
+- Custom dashboards based on JSON configuration files.
+- Extensible metrics datasource implementation (Prometheus included).
 - Templating of variables.
 - Auto time interval adjustment for queries.
+- Auto unit formatting on widgets.
 - Fixed and adaptive grid.
 - Color customization on widgets.
 - Configurable autorefresh.
@@ -18,12 +20,25 @@ Grafterm is an application to load dashboards on the terminal, you could think o
 
 Download the binaries from [releases]
 
-## Run options
+## Run examples
 
-- `--cfg`: Path for the dashboard configuration file to load.
-- `--refresh-interval` refresh interval for the dashboard metrics.
-- `--relative-time-range` relative time from now that will be used for the
-- `--debug`: run in debug mode, it will log to `--log-path` output or `grafterm.log` by default.
+Simple run:
+
+```bash
+grafterm -c ./mydashboard.json
+```
+
+Setting a relative time:
+
+```bash
+grafterm -c ./mydashboard.json --relative-time-range 48h
+```
+
+Replacing dashboard variables:
+
+```bash
+grafterm -c ./mydashboard.json -v env=prod -v job=envoy
+```
 
 ## Dashboard
 

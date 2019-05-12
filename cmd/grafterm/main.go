@@ -19,11 +19,6 @@ import (
 	"github.com/slok/grafterm/internal/view/render/termdash"
 )
 
-var (
-	// Version is the application version.
-	Version = "dev"
-)
-
 // Main is the main application.
 type Main struct {
 	flags  *flags
@@ -124,6 +119,7 @@ func (m *Main) Run() error {
 		appcfg := view.AppConfig{
 			RefreshInterval:   rd,
 			RelativeTimeRange: relTR,
+			OverrideVariables: m.flags.variables,
 		}
 		app := view.NewApp(appcfg, ctrl, renderer, m.logger)
 		ds, err := cfg.Dashboard()

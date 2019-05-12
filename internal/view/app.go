@@ -24,6 +24,9 @@ type AppConfig struct {
 	TimeRangeStart    time.Time // Fixed optional time.
 	TimeRangeEnd      time.Time // Fixed optional time.
 	RelativeTimeRange time.Duration
+	// OverrideVariables have priority over all variables and will override the
+	// loaded variables in the dashboard.
+	OverrideVariables map[string]string
 }
 
 func (a *AppConfig) defaults() {
@@ -159,9 +162,6 @@ func (a *App) syncWidgets() {
 func (a *App) createWidgets(rws []render.Widget) []widget {
 	widgets := []widget{}
 
-	// Dashboard static data for templating.
-	dashboardData := a.getDashboardVariableData()
-
 	// Create app widgets based on the render view widgets.
 	for _, rw := range rws {
 		var w widget
@@ -178,8 +178,12 @@ func (a *App) createWidgets(rws []render.Widget) []widget {
 			continue
 		}
 
+		// Dashboard data.
+		dashboardData := a.getDashboardVariableData()
+		overrideData := a.getOverrideVariableData()
+
 		// Widget middlewares.
-		w = withWidgetDataMiddleware(dashboardData, w) // Assign static data to widget.
+		w = withWidgetDataMiddleware(dashboardData, overrideData, w) // Assign static data to widget.
 
 		widgets = append(widgets, w)
 	}
@@ -224,6 +228,14 @@ func (a *App) getDashboardVariableData() template.Data {
 	// Merge them.
 	data = data.WithData(dashboardData)
 	return data
+}
+
+func (a *App) getOverrideVariableData() template.Data {
+	od := map[string]interface{}{}
+	for k, v := range a.cfg.OverrideVariables {
+		od[k] = v
+	}
+	return template.Data(od)
 }
 
 func (a *App) getSyncVariableData(cfg syncConfig) template.Data {
