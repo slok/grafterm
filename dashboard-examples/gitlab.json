@@ -1,0 +1,245 @@
+{
+  "version": "v1",
+  "datasources": {
+    "gitlab": {
+      "prometheus": {
+        "address": "https://dashboards.gitlab.com/api/datasources/proxy/6/"
+      }
+    }
+  },
+  "dashboard": {
+    "variables": {
+      "env": {
+        "constant": {
+          "value": "gprd"
+        }
+      },
+      "monitor": {
+        "constant": {
+          "value": "default"
+        }
+      },
+      "interval": {
+        "interval": {
+          "steps": 50
+        }
+      }
+    },
+    "widgets": [
+      {
+        "title": "GitLab.com",
+        "gridPos": { "w": 10 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "gitlab",
+            "expr": "avg_over_time(probe_success{env=\"{{.env}}\",monitor=\"default\",instance=\"https://gitlab.com\", job=\"blackbox-tls-redirect\"}[{{.interval}}])"
+          },
+          "valueText": "{{ if (lt .value 1.0) }}DOWN{{else}}UP{{end}}",
+          "thresholds": [
+            { "color": "#d44a3a" },
+            { "color": "#2dc937", "startValue": 1 }
+          ]
+        }
+      },
+      {
+        "title": "Infrastructure alerts",
+        "gridPos": { "w": 10 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "gitlab",
+            "expr": "sum(max_over_time(ALERTS{env=\"{{.env}}\",monitor=\"{{.monitor}}\",alertstate=\"firing\"}[{{.interval}}])) OR vector(0)"
+          },
+          "valueText": "{{ printf \"%.0f\" .value }}",
+          "thresholds": [
+            { "color": "#2dc937" },
+            { "color": "#e7b416", "startValue": 1 },
+            { "color": "#d44a3a", "startValue": 10 }
+          ]
+        }
+      },
+      {
+        "title": "GitLab registry",
+        "gridPos": { "w": 10 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "gitlab",
+            "expr": "avg_over_time(probe_success{env=\"{{.env}}\",monitor=\"default\",instance=\"https://registry.gitlab.com\", job=\"blackbox\"}[{{.interval}}])"
+          },
+          "valueText": "{{ if (lt .value 1.0) }}DOWN{{else}}UP{{end}}",
+          "thresholds": [
+            { "color": "#d44a3a" },
+            { "color": "#2dc937", "startValue": 1 }
+          ]
+        }
+      },
+      {
+        "title": "Application alerts",
+        "gridPos": { "w": 10 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "gitlab",
+            "expr": "sum(max_over_time(ALERTS{env=\"{{.env}}\",monitor=\"app\",alertstate=\"firing\"}[{{.interval}}])) or vector(0)"
+          },
+          "valueText": "{{ printf \"%.0f\" .value }}",
+          "thresholds": [
+            { "color": "#2dc937" },
+            { "color": "#e7b416", "startValue": 1 },
+            { "color": "#d44a3a", "startValue": 10 }
+          ]
+        }
+      },
+      {
+        "title": "Reboots (last 48h)",
+        "gridPos": { "w": 10 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "gitlab",
+            "expr": "sum(count((time() - node_boot_time_seconds{env=\"{{.env}}\",monitor=\"default\"}) / 3600 < 48) by (fqdn))"
+          },
+          "valueText": "{{ printf \"%.0f\" .value }}"
+        }
+      },
+      {
+        "title": "GitLab Pages",
+        "gridPos": { "w": 10 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "gitlab",
+            "expr": "avg_over_time(probe_success{env=\"{{.env}}\",instance=\"https://gitlab-examples.gitlab.io\",job=\"blackbox\"}[{{.interval}}])"
+          },
+          "valueText": "{{ if (lt .value 1.0) }}DOWN{{else}}UP{{end}}",
+          "thresholds": [
+            { "color": "#d44a3a" },
+            { "color": "#2dc937", "startValue": 1 }
+          ]
+        }
+      },
+      {
+        "title": "GitLab Sign-in",
+        "gridPos": { "w": 10 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "gitlab",
+            "expr": "avg_over_time(probe_success{env=\"{{.env}}\",instance=\"https://gitlab.com/users/sign_in\",job=\"blackbox\"}[{{.interval}}])"
+          },
+          "valueText": "{{ if (lt .value 1.0) }}DOWN{{else}}UP{{end}}",
+          "thresholds": [
+            { "color": "#d44a3a" },
+            { "color": "#2dc937", "startValue": 1 }
+          ]
+        }
+      },
+      {
+        "title": "internal LB",
+        "gridPos": { "w": 10 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "gitlab",
+            "expr": "avg_over_time(probe_success{env=\"{{.env}}\",instance=\"https://int.{{.env}}.gitlab.net/-/liveness\",job=\"blackbox-internal\"}[{{.interval}}])"
+          },
+          "valueText": "{{ if (lt .value 1.0) }}DOWN{{else}}UP{{end}}",
+          "thresholds": [
+            { "color": "#d44a3a" },
+            { "color": "#2dc937", "startValue": 1 }
+          ]
+        }
+      },
+      {
+        "title": "Chef errors",
+        "gridPos": { "w": 20 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "gitlab",
+            "expr": "sum(round(avg_over_time(chef_client_error{env=\"{{.env}}\"}[{{.interval}}])))"
+          },
+          "valueText": "{{ printf \"%.0f\" .value }} NODES"
+        }
+      },
+      {
+        "title": "Gitlab HAProxy backend responses",
+        "gridPos": {
+          "w": 100
+        },
+        "graph": {
+          "visualization": {
+            "legend": {
+              "disable": false,
+              "rightSide": false
+            },
+            "yAxis": {
+              "unit": "reqps",
+              "decimals": 2
+            }
+          },
+          "queries": [
+            {
+              "datasourceID": "gitlab",
+              "legend": "{{ .backend }}",
+              "expr": "sum(avg_over_time(backend_code:haproxy_server_http_responses_total:irate1m{env=\"{{.env}}\",monitor=\"{{.monitor}}\"}[{{.interval}}])) by (backend)"
+            }
+          ]
+        }
+      },
+      {
+        "title": "Gitlab HAProxy frontend responses",
+        "gridPos": {
+          "w": 100
+        },
+        "graph": {
+          "visualization": {
+            "legend": {
+              "disable": false,
+              "rightSide": false
+            },
+            "yAxis": {
+              "unit": "reqps",
+              "decimals": 2
+            }
+          },
+          "queries": [
+            {
+              "datasourceID": "gitlab",
+              "legend": "{{ .frontend }}",
+              "expr": "sum(avg_over_time(frontend_code:haproxy_frontend_http_responses_total:irate1m{env=\"{{.env}}\",monitor=\"{{.monitor}}\"}[{{.interval}}])) by (frontend)"
+            }
+          ]
+        }
+      },
+      {
+        "title": "Gitlab 5XX responses",
+        "gridPos": {
+          "w": 100
+        },
+        "graph": {
+          "visualization": {
+            "legend": {
+              "disable": false,
+              "rightSide": false
+            },
+            "yAxis": {
+              "unit": "reqps",
+              "decimals": 2
+            }
+          },
+          "queries": [
+            {
+              "legend": "haproxy 5xx {{ .backend }}",
+              "datasourceID": "gitlab",
+              "expr": "sum(avg_over_time(backend_code:haproxy_server_http_responses_total:irate1m{env=\"{{.env}}\",monitor=\"{{.monitor}}\",code=\"5xx\"}[{{.interval}}])) by (backend)"
+            },
+            {
+              "legend": "SD haproxy {{ .code }}",
+              "datasourceID": "gitlab",
+              "expr": "sum without (zone) (avg_over_time(zone:stackdriver_haproxy_errors:rate1m{env=\"{{.env}}\",monitor=\"{{.monitor}}\"}[{{.interval}}]))"
+            },
+            {
+              "legend": "SD haproxy timeout",
+              "datasourceID": "gitlab",
+              "expr": "sum without (zone) (zone:stackdriver_haproxy_deadline_exceeded:rate1m{env=\"{{.env}}\",monitor=\"{{.monitor}}\"})"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

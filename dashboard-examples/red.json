@@ -1,0 +1,137 @@
+{
+  "version": "v1",
+  "datasources": {
+    "ds": {
+      "prometheus": {
+        "address": "http://127.0.0.1:9090"
+      }
+    }
+  },
+  "dashboard": {
+    "grid": {
+      "maxWidth": 100
+    },
+    "variables": {
+      "prefix": {
+        "constant": { "value": " " }
+      },
+      "job": {
+        "constant": { "value": ".*" }
+      },
+      "interval": {
+        "interval": { "steps": 50 }
+      }
+    },
+    "widgets": [
+      {
+        "title": "RPS",
+        "gridpos": {
+          "w": 33
+        },
+        "singlestat": {
+          "query": {
+            "expr": "sum(rate({{.prefix}}http_request_duration_seconds_count{job=~\"{{.job}}\"}[{{.interval}}]))",
+            "datasourceID": "ds"
+          },
+          "decimals": 2,
+          "thresholds": [{ "color": "#1f78c1" }]
+        }
+      },
+      {
+        "title": "Errors(5xx)",
+        "gridpos": {
+          "w": 33
+        },
+        "singlestat": {
+          "query": {
+            "expr": "(sum(rate({{.prefix}}http_request_duration_seconds_count{job=~\"{{.job}}\",code=~\"5..\"}[{{.interval}}])) / sum(rate({{.prefix}}http_request_duration_seconds_count[{{.interval}}])) ) * 100 OR vector(0)",
+            "datasourceID": "ds"
+          },
+          "unit": "percent",
+          "decimals": 2,
+          "thresholds": [
+            {
+              "color": "#299c46"
+            },
+            {
+              "color": "#FF780A",
+              "startValue": 0.01
+            },
+            {
+              "color": "#d44a3a",
+              "startValue": 2
+            }
+          ]
+        }
+      },
+      {
+        "title": "Latency",
+        "gridpos": { "w": 34 },
+        "singlestat": {
+          "query": {
+            "expr": "histogram_quantile(0.99, sum(rate({{.prefix}}http_request_duration_seconds_bucket{job=~\"{{.job}}\"}[{{.interval}}])) by (le))",
+            "datasourceID": "ds"
+          },
+          "unit": "seconds",
+          "thresholds": [
+            { "color": "#299c46" },
+            { "color": "#FF780A", "startValue": 0.35 },
+            { "color": "#d44a3a", "startValue": 0.6 }
+          ]
+        }
+      },
+      {
+        "title": "RPS",
+        "gridpos": { "w": 100 },
+        "graph": {
+          "visualization": {
+            "yAxis": {
+              "unit": "reqps",
+              "decimals": 2
+            }
+          },
+          "queries": [
+            {
+              "datasourceID": "ds",
+              "expr": "sum(rate({{.prefix}}http_request_duration_seconds_count{job=~\"{{.job}}\"}[{{.interval}}])) by (code)",
+              "legend": "{{ .code }}"
+            }
+          ]
+        }
+      },
+      {
+        "title": "Latency",
+        "gridpos": { "w": 100 },
+        "graph": {
+          "visualization": {
+            "seriesOverride": [
+              { "regex": "^p50$", "color": "#EAB839" },
+              { "regex": "^p95$", "color": "#EF843C" },
+              { "regex": "^p99$", "color": "#E24D42" }
+            ],
+            "yAxis": {
+              "unit": "seconds"
+            }
+          },
+          "queries": [
+            {
+              "datasourceID": "ds",
+              "expr": "histogram_quantile(0.99, sum(rate({{.prefix}}http_request_duration_seconds_bucket{job=~\"{{.job}}\"}[{{.interval}}])) by (le))",
+              "legend": "p99"
+            },
+            {
+              "datasourceID": "ds",
+              "expr": "histogram_quantile(0.95, sum(rate({{.prefix}}http_request_duration_seconds_bucket{job=~\"{{.job}}\"}[{{.interval}}])) by (le)) ",
+              "legend": "p95"
+            },
+            {
+              "datasourceID": "ds",
+              "expr": "histogram_quantile(0.50, sum(rate({{.prefix}}http_request_duration_seconds_bucket{job=~\"{{.job}}\"}[{{.interval}}])) by (le)) ",
+              "legend": "p50"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
