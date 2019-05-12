@@ -197,10 +197,11 @@ func (a *App) getSyncConfig() syncConfig {
 		timeRangeEnd:   a.cfg.TimeRangeEnd,
 	}
 
+	// If we don't have fixed time, make the time ranges work in relative mode
+	// based on now timestamp.
 	if cfg.timeRangeEnd.IsZero() {
 		cfg.timeRangeEnd = time.Now().UTC()
 	}
-
 	if cfg.timeRangeStart.IsZero() {
 		cfg.timeRangeStart = cfg.timeRangeEnd.Add(-1 * a.cfg.RelativeTimeRange)
 	}

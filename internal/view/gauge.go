@@ -50,7 +50,7 @@ func (g *gauge) sync(ctx context.Context, cfg syncConfig) error {
 	// Gather the gauge value.
 	templatedQ := g.cfg.Gauge.Query
 	templatedQ.Expr = cfg.templateData.Render(templatedQ.Expr)
-	m, err := g.controller.GetSingleInstantMetric(ctx, templatedQ)
+	m, err := g.controller.GetSingleMetric(ctx, templatedQ, cfg.timeRangeEnd)
 	if err != nil {
 		return fmt.Errorf("error getting single instant metric: %s", err)
 	}
