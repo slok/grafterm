@@ -1,0 +1,172 @@
+{
+  "version": "v1",
+  "datasources": {
+    "prometheus": {
+      "prometheus": {
+        "address": "http://127.0.0.1:9090"
+      }
+    }
+  },
+  "dashboard": {
+    "variables": {
+      "job": {
+        "constant": { "value": "prometheus" }
+      },
+      "interval": {
+        "interval": { "steps": 50 }
+      }
+    },
+    "widgets": [
+      {
+        "title": "Goroutines",
+        "gridPos": { "w": 20 },
+        "singlestat": {
+          "thresholds": [{ "color": "#47D038" }],
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "sum(go_goroutines{job=\"{{.job}}\"})"
+          }
+        }
+      },
+      {
+        "title": "GC duration",
+        "gridPos": { "w": 20 },
+        "singlestat": {
+          "unit": "second",
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "max(go_gc_duration_seconds{job=\"{{.job}}\"})"
+          }
+        }
+      },
+      {
+        "title": "Stack",
+        "gridPos": { "w": 20 },
+        "singlestat": {
+          "unit": "bytes",
+          "thresholds": [{ "color": "#22F1F1" }],
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "sum(go_memstats_stack_inuse_bytes{job=\"{{.job}}\"})"
+          }
+        }
+      },
+      {
+        "title": "Heap",
+        "gridPos": { "w": 20 },
+        "singlestat": {
+          "unit": "bytes",
+          "thresholds": [{ "color": "#22F1F1" }],
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "sum(go_memstats_heap_inuse_bytes{job=\"{{.job}}\"})"
+          }
+        }
+      },
+      {
+        "title": "Alloc",
+        "gridPos": { "w": 20 },
+        "singlestat": {
+          "unit": "bytes",
+          "thresholds": [{ "color": "#22F1F1" }],
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "sum(go_memstats_alloc_bytes{job=\"{{.job}}\"})"
+          }
+        }
+      },
+      {
+        "title": "Goroutines",
+        "gridPos": { "w": 50 },
+        "graph": {
+          "visualization": {
+            "legend": { "disable": true },
+            "yAxis": { "unit": "", "decimals": 2 }
+          },
+          "queries": [
+            {
+              "datasourceID": "prometheus",
+              "expr": "sum(go_goroutines{job=\"{{.job}}\"})"
+            }
+          ]
+        }
+      },
+      {
+        "title": "GC duration",
+        "gridPos": { "w": 50 },
+        "graph": {
+          "visualization": {
+            "yAxis": { "unit": "second" }
+          },
+          "queries": [
+            {
+              "datasourceID": "prometheus",
+              "expr": "max(go_gc_duration_seconds{job=\"{{.job}}\"}) by (quantile)",
+              "legend": "Q{{.quantile}}"
+            }
+          ],
+          "visualization": {
+            "seriesOverride": [
+              { "regex": "^Q0$", "color": "#F9E2D2" },
+              { "regex": "^Q0.25$", "color": "#F2C96D" },
+              { "regex": "^Q0.5(0)?$", "color": "#EAB839" },
+              { "regex": "^Q0.75$", "color": "#EF843C" },
+              { "regex": "^Q1(.0)?$", "color": "#E24D42" }
+            ]
+          }
+        }
+      },
+      {
+        "title": "Memory",
+        "gridPos": { "w": 50 },
+        "graph": {
+          "visualization": {
+            "yAxis": { "unit": "byte", "decimals": 0 }
+          },
+          "queries": [
+            {
+              "datasourceID": "prometheus",
+              "expr": "sum(go_memstats_stack_inuse_bytes{job=\"{{.job}}\"})",
+              "legend": "stack inuse"
+            },
+            {
+              "datasourceID": "prometheus",
+              "expr": "sum(go_memstats_heap_inuse_bytes{job=\"{{.job}}\"})",
+              "legend": "heap inuse"
+            },
+            {
+              "datasourceID": "prometheus",
+              "expr": "sum(go_memstats_alloc_bytes{job=\"{{.job}}\"})",
+              "legend": "alloc"
+            }
+          ]
+        }
+      },
+      {
+        "title": "Memory ops rate",
+        "gridPos": {
+          "w": 50
+        },
+        "graph": {
+          "queries": [
+            {
+              "datasourceID": "prometheus",
+              "expr": "sum(rate(go_memstats_frees_total{job=\"{{.job}}\"}[{{.interval}}]))",
+              "legend": "frees/s"
+            },
+            {
+              "datasourceID": "prometheus",
+              "expr": "sum(rate(go_memstats_mallocs_total{job=\"{{.job}}\"}[{{.interval}}]))",
+              "legend": "mallocs/s"
+            },
+            {
+              "datasourceID": "prometheus",
+              "expr": "sum(rate(go_memstats_lookups_total{job=\"{{.job}}\"}[{{.interval}}]))",
+              "legend": "lookups/s"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
