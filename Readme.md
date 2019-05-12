@@ -28,10 +28,22 @@ Simple run:
 grafterm -c ./mydashboard.json
 ```
 
-Setting a relative time:
+Setting a relative time duration:
 
 ```bash
-grafterm -c ./mydashboard.json --relative-time-range 48h
+grafterm -c ./mydashboard.json -d 48h
+```
+
+Setting a fixed time range to visualize the metrics using duration notation. In this example is start at `now-22h` and end at `now-20h`
+
+```bash
+grafterm -c ./mydashboard.json -s 22h -e 20h
+```
+
+Setting a fixed time range to visualize the metrics using timestamp [ISO 8601] notation.
+
+```bash
+grafterm -c ./mydashboard.json -s 2019-05-12T12:32:11+02:00 -e 2019-05-12T12:35:11+02:00
 ```
 
 Replacing dashboard variables:
@@ -63,3 +75,4 @@ This project would not be possible without the effort of many people and project
 [releases]: https://github.com/slok/grafterm/releases
 [cfg-md]: docs/cfg.md
 [dashboard-examples]: dashboard-examples
+[iso 8601]: https://en.wikipedia.org/wiki/ISO_8601
