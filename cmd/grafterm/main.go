@@ -102,25 +102,32 @@ func (m *Main) Run() error {
 
 	// Run application.
 	{
-		rd, err := time.ParseDuration(m.flags.refreshInterval)
-		if err != nil {
-			return err
-		}
-
-		var relTR time.Duration
-		if m.flags.relativeTimeRange != "" {
-			r, err := time.ParseDuration(m.flags.relativeTimeRange)
-			if err != nil {
-				return err
-			}
-			relTR = r
-		}
-
 		appcfg := view.AppConfig{
-			RefreshInterval:   rd,
-			RelativeTimeRange: relTR,
+			RefreshInterval:   m.flags.refreshInterval,
+			RelativeTimeRange: m.flags.relativeDur,
 			OverrideVariables: m.flags.variables,
 		}
+
+		// Only set fixed time if start set.
+		if m.flags.start != "" {
+			start, err := timeFromFlag(m.flags.start)
+			if err != nil {
+				return fmt.Errorf("error parsing start flag: %s", err)
+			}
+			end, err := timeFromFlag(m.flags.end)
+			if err != nil {
+				return fmt.Errorf("error parsing end flag: %s", err)
+			}
+
+			appcfg.TimeRangeStart = start
+			appcfg.TimeRangeEnd = end
+
+			// Check times are correct.
+			if !appcfg.TimeRangeEnd.IsZero() && appcfg.TimeRangeEnd.Before(appcfg.TimeRangeStart) {
+				return fmt.Errorf("end timestamp can't be before start timestamp")
+			}
+		}
+
 		app := view.NewApp(appcfg, ctrl, renderer, m.logger)
 		ds, err := cfg.Dashboard()
 		if err != nil {
@@ -160,10 +167,31 @@ func (m *Main) loadConfiguration() (configuration.Configuration, error) {
 	return cfg, nil
 }
 
+// timeFromFlag gets the time from a flag based on a duration or on a
+// fixed time stamp.
+func timeFromFlag(v string) (time.Time, error) {
+	var t time.Time
+
+	// Try parsing using duration.
+	d, err := time.ParseDuration(v)
+	if err == nil {
+		t = time.Now().UTC().Add(-1 * d)
+	} else {
+		// Try parsing as ISO 8601.
+		parsedTime, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			return t, fmt.Errorf("'%s' is not a valid timestamp or duration string", v)
+		}
+		t = parsedTime
+	}
+
+	return t, nil
+}
+
 func main() {
 	flags, err := newFlags()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error parsing flags: %s", err)
+		fmt.Fprintf(os.Stderr, "error parsing flags: %s\n", err)
 		os.Exit(1)
 	}
 
@@ -172,7 +200,7 @@ func main() {
 	}
 
 	if err := m.Run(); err != nil {
-		fmt.Fprintf(os.Stderr, "error executing program: %s", err)
+		fmt.Fprintf(os.Stderr, "error executing program: %s\n", err)
 		os.Exit(1)
 	}
 

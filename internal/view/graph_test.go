@@ -24,9 +24,26 @@ func rv(f float64) *render.Value {
 
 func TestGraphWidget(t *testing.T) {
 	// Common precalculated data that should be expected.
+	xLabelsUTC := []string{
+		"2019-04-13T07:50:00+00:00",
+		"2019-04-13T08:00:00+00:00",
+		"2019-04-13T08:10:00+00:00",
+		"2019-04-13T08:20:00+00:00",
+		"2019-04-13T08:30:00+00:00",
+		"2019-04-13T08:40:00+00:00",
+		"2019-04-13T08:50:00+00:00",
+		"2019-04-13T09:00:00+00:00",
+		"2019-04-13T09:10:00+00:00",
+		"2019-04-13T09:20:00+00:00",
+	}
+	xLabels := make([]string, len(xLabelsUTC))
+	for i, t := range xLabelsUTC {
+		utcT, _ := time.Parse(time.RFC3339, t)
+		xLabels[i] = utcT.Local().Format("15:04")
+	}
+
 	t1, _ := time.Parse(time.RFC3339, "2019-04-13T09:30:00+00:00")
 	t1Minus100m := t1.Add(-100 * time.Minute)
-	xLabels := []string{"07:50", "08:00", "08:10", "08:20", "08:30", "08:40", "08:50", "09:00", "09:10", "09:20"}
 	graphCapacity := 10
 
 	tests := []struct {

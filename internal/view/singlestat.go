@@ -57,7 +57,7 @@ func (s *singlestat) sync(ctx context.Context, cfg syncConfig) error {
 	// Gather the value.
 	templatedQ := s.cfg.Singlestat.Query
 	templatedQ.Expr = cfg.templateData.Render(templatedQ.Expr)
-	m, err := s.controller.GetSingleInstantMetric(ctx, templatedQ)
+	m, err := s.controller.GetSingleMetric(ctx, templatedQ, cfg.timeRangeEnd)
 	if err != nil {
 		return fmt.Errorf("error getting single instant metric: %s", err)
 	}
