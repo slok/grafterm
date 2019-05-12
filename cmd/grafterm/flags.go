@@ -1,17 +1,32 @@
 package main
 
 import (
-	"flag"
 	"os"
+
+	"github.com/alecthomas/kingpin"
+)
+
+var (
+	// Version is the application version.
+	Version = "dev"
 )
 
 const (
 	defConfig          = "dashboard.json"
 	defRefreshInterval = "10s"
 	defLogPath         = "grafterm.log"
+
+	// flag descriptions.
+	descCfg               = "the path to the configuration file"
+	descRefreshInterval   = "the interval to refresh the dashboard"
+	descLogPath           = "the path where the log output will be written"
+	descRelativeTimeRange = "relative time range (from now) for the dashboard time range"
+	descDebug             = "enable debug mode, on debug mode it will print logs to the desired output"
+	descVar               = "repeatable flag that will overwrite the variable defined on the dashboard (in 'key=value' form)"
 )
 
 type flags struct {
+	variables         map[string]string
 	cfg               string
 	debug             bool
 	version           bool
@@ -21,18 +36,22 @@ type flags struct {
 }
 
 func newFlags() (*flags, error) {
-	flags := &flags{}
-	fl := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	flags := &flags{
+		variables: map[string]string{},
+	}
+
+	// Create app.
+	app := kingpin.New("grafterm", "graph metrics on the terminal")
+	app.Version(Version)
 
 	// Register flags.
-	fl.StringVar(&flags.cfg, "cfg", defConfig, "the path to the configuration file")
-	fl.StringVar(&flags.refreshInterval, "refresh-interval", defRefreshInterval, "the interval to refresh the dashboard")
-	fl.StringVar(&flags.logPath, "log-path", defLogPath, "the path where the log output will be written")
-	fl.StringVar(&flags.relativeTimeRange, "relative-time-range", "", "optional relative time range (from now) for the dashboard time range")
-	fl.BoolVar(&flags.debug, "debug", false, "enable debug mode, on debug mode it will print logs to the desired output")
-	fl.BoolVar(&flags.version, "version", false, "print version")
-
-	fl.Parse(os.Args[1:])
+	app.Flag("cfg", descCfg).Default(defConfig).Short('c').StringVar(&flags.cfg)
+	app.Flag("refresh-interval", descRefreshInterval).Default(defRefreshInterval).Short('r').StringVar(&flags.refreshInterval)
+	app.Flag("log-path", descLogPath).Default(defLogPath).StringVar(&flags.logPath)
+	app.Flag("relative-time-range", descLogPath).StringVar(&flags.relativeTimeRange)
+	app.Flag("var", descVar).Short('v').StringMapVar(&flags.variables)
+	app.Flag("debug", descDebug).BoolVar(&flags.debug)
+	app.Parse(os.Args[1:])
 
 	if err := flags.validate(); err != nil {
 		return nil, err
