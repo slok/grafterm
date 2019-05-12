@@ -18,14 +18,13 @@ func (m *mockWidget) sync(_ context.Context, cfg syncConfig) error {
 }
 
 func TestWidgetDataMiddleware(t *testing.T) {
-	tests := []struct {
-		name    string
-		data    template.Data
-		cfg     syncConfig
-		expData template.Data
+	tests := map[string]struct {
+		data         template.Data
+		overrideData template.Data
+		cfg          syncConfig
+		expData      template.Data
 	}{
-		{
-			name: "storing static data should add that data on every call to the sync",
+		"Storing static data should add that data on every call to the sync.": {
 			data: map[string]interface{}{
 				"name":     "Batman",
 				"realName": "Bruce",
@@ -46,12 +45,61 @@ func TestWidgetDataMiddleware(t *testing.T) {
 				"transport": "batmobile",
 			},
 		},
+		"Storing override data should add that data on every call to the sync.": {
+			overrideData: map[string]interface{}{
+				"name":     "Batman",
+				"realName": "Bruce",
+				"lastName": "Wayne",
+				"location": "Gotham",
+			},
+			cfg: syncConfig{
+				templateData: map[string]interface{}{
+					"location":  "Arkham asylum",
+					"transport": "batmobile",
+				},
+			},
+			expData: map[string]interface{}{
+				"name":      "Batman",
+				"realName":  "Bruce",
+				"lastName":  "Wayne",
+				"location":  "Gotham",
+				"transport": "batmobile",
+			},
+		},
+		"Override data should be merged and have priority.": {
+			data: map[string]interface{}{
+				"name":       "Batman",
+				"realName":   "Bruce",
+				"lastName":   "Wayne",
+				"worstEnemy": "Joker",
+			},
+			overrideData: map[string]interface{}{
+				"name":     "Batman2",
+				"realName": "Bruce",
+				"lastName": "Wayne2",
+				"location": "Gotham",
+			},
+			cfg: syncConfig{
+				templateData: map[string]interface{}{
+					"location":  "Arkham asylum",
+					"transport": "batmobile",
+				},
+			},
+			expData: map[string]interface{}{
+				"name":       "Batman2",
+				"realName":   "Bruce",
+				"lastName":   "Wayne2",
+				"location":   "Gotham",
+				"transport":  "batmobile",
+				"worstEnemy": "Joker",
+			},
+		},
 	}
 
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
 			mw := &mockWidget{}
-			w := withWidgetDataMiddleware(test.data, mw)
+			w := withWidgetDataMiddleware(test.data, test.overrideData, mw)
 			w.sync(context.TODO(), test.cfg)
 
 			assert.Equal(t, test.expData, mw.calledCfg.templateData)
