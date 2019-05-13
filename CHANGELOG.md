@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.0] - 2019-05-13
+
 ### Added
 
 - `start` and `end` flags to visualize fixed time range graphs.
@@ -30,5 +32,5 @@
 - Main term application.
 - Fake metrics gatherer.
 
-[unreleased]: https://github.com/slok/go-http-metrics/compare/v0.x.0...HEAD
-[0.x.0]: https://github.com/slok/grafterm/releases/tag/v0.x.0
+[unreleased]: https://github.com/slok/go-http-metrics/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/slok/grafterm/releases/tag/v0.1.0
