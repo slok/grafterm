@@ -31,7 +31,7 @@ MOCKS_CMD := ./hack/scripts/mockgen.sh
 DOCKER_RUN_CMD := docker run --env ostype=$(OSTYPE) -v ${PWD}:$(DOCKER_GO_SERVICE_PATH) --rm -it $(SERVICE_NAME)
 BUILD_BINARY_CMD := VERSION=${VERSION} ./hack/scripts/build.sh
 BUILD_IMAGE_CMD := IMAGE_VERSION=${VERSION} ./hack/scripts/build-image.sh
-CI_RELEASE_CMD := ./hack/scripts/travis-release.sh
+CI_RELEASE_CMD := ./hack/scripts/ci-release.sh
 DEPS_CMD := GO111MODULE=on go mod tidy && GO111MODULE=on go mod vendor
 
 
