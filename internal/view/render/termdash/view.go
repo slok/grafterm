@@ -40,7 +40,7 @@ type termDashboard struct {
 	terminal *termbox.Terminal
 }
 
-// NewTermDashboard returns a new terminal view, it accepts a cancel function taht will
+// NewTermDashboard returns a new terminal view, it accepts a cancel function that will
 // be called when the terminal rendered quit function is called. This is required because
 // the events now are captured by the rendered terminal.
 func NewTermDashboard(cancel func(), logger log.Logger) (render.Renderer, error) {

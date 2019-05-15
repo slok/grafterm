@@ -6,6 +6,7 @@ import (
 	"github.com/slok/grafterm/internal/model"
 )
 
+// Scope is the scope of the variable
 type Scope int
 
 const (
