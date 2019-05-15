@@ -1,6 +1,6 @@
 # Configuration file
 
-First of all there are dashboard examples [here][dashboard-examples]
+First of all there are dashboard examples [here](/dashboard-examples)
 
 The configuration file format is JSON and is splitted in two main blocks, `datasources` and `dashboard`.
 
