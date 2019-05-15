@@ -9,6 +9,7 @@ import (
 // Logger knows how to log.
 type Logger interface {
 	Infof(format string, args ...interface{})
+	Warnf(format string, args ...interface{})
 	Errorf(format string, args ...interface{})
 }
 
@@ -18,6 +19,7 @@ var Dummy = &dummy{}
 type dummy struct{}
 
 func (d dummy) Infof(format string, args ...interface{})  {}
+func (d dummy) Warnf(format string, args ...interface{})  {}
 func (d dummy) Errorf(format string, args ...interface{}) {}
 
 // Config is the Logger configuration
@@ -44,6 +46,9 @@ type zero struct {
 
 func (z zero) Infof(format string, args ...interface{}) {
 	z.logger.Info().Msgf(format, args...)
+}
+func (z zero) Warnf(format string, args ...interface{}) {
+	z.logger.Warn().Msgf(format, args...)
 }
 func (z zero) Errorf(format string, args ...interface{}) {
 	z.logger.Error().Msgf(format, args...)

@@ -1,6 +1,6 @@
 # Configuration file
 
-First of all there are dashboard examples [here](/dashboard-examples)
+First of all there are dashboard examples [here][dashboard-examples]
 
 The configuration file format is JSON and is splitted in two main blocks, `datasources` and `dashboard`.
 
@@ -32,6 +32,16 @@ This main block contains a list of the datasources being used by the dashboard, 
     }
   ],
 ```
+
+### Types
+
+#### [Prometheus]
+
+This will gather metrics from Prometheus.
+
+Options:
+
+- `address`: Address to Prometheus API
 
 ## Dashboard
 
@@ -333,4 +343,5 @@ Some widgets have unit formatting support, these are the ones that can be used:
 
 Units come in combination with the `decimals` settings.
 
-[dashboard-examples]: dashboard-examples
+[dashboard-examples]: /dashboard-examples
+[prometheus]: http://prometheus.io
