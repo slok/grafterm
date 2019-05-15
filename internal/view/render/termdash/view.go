@@ -7,6 +7,7 @@ import (
 	"github.com/mum4k/termdash"
 	"github.com/mum4k/termdash/container"
 	"github.com/mum4k/termdash/container/grid"
+	"github.com/mum4k/termdash/keyboard"
 	"github.com/mum4k/termdash/terminal/termbox"
 	"github.com/mum4k/termdash/terminal/terminalapi"
 
@@ -80,7 +81,7 @@ func (t *termDashboard) LoadDashboard(ctx context.Context, gr *graftermgrid.Grid
 
 	go func() {
 		quitter := func(k *terminalapi.Keyboard) {
-			if k.Key == 'q' || k.Key == 'Q' {
+			if k.Key == 'q' || k.Key == 'Q' || k.Key == keyboard.KeyEsc {
 				t.cancel()
 			}
 		}
