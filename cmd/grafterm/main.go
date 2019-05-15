@@ -11,9 +11,11 @@ import (
 	"github.com/oklog/run"
 
 	"github.com/slok/grafterm/internal/controller"
+	"github.com/slok/grafterm/internal/model"
 	"github.com/slok/grafterm/internal/service/configuration"
 	"github.com/slok/grafterm/internal/service/log"
-	metric "github.com/slok/grafterm/internal/service/metric/datasource"
+	"github.com/slok/grafterm/internal/service/metric"
+	metricdatasource "github.com/slok/grafterm/internal/service/metric/datasource"
 	metricmiddleware "github.com/slok/grafterm/internal/service/metric/middleware"
 	"github.com/slok/grafterm/internal/view"
 	"github.com/slok/grafterm/internal/view/render/termdash"
@@ -46,23 +48,26 @@ func (m *Main) Run() error {
 		})
 	}
 
-	// Load configuration.
-	cfg, err := m.loadConfiguration()
+	// Load Dashboard.
+	cfg, err := loadConfiguration(m.flags.cfg)
 	if err != nil {
 		return err
 	}
 
-	dss, err := cfg.Datasources()
+	ddss, err := cfg.Datasources()
 	if err != nil {
 		return err
 	}
-	gatherer, err := metric.NewGatherer(metric.ConfigGatherer{
-		Datasources: dss,
-	})
+
+	udss, err := m.loadUserDatasources()
 	if err != nil {
 		return err
 	}
-	gatherer = metricmiddleware.Logger(m.logger, gatherer)
+
+	gatherer, err := m.createGatherer(ddss, udss)
+	if err != nil {
+		return err
+	}
 
 	// Create controller.
 	ctrl := controller.NewController(gatherer)
@@ -151,9 +156,9 @@ func (m *Main) Run() error {
 	return g.Run()
 }
 
-func (m *Main) loadConfiguration() (configuration.Configuration, error) {
+func loadConfiguration(cfgPath string) (configuration.Configuration, error) {
 	// Load dashboard file.
-	f, err := os.Open(m.flags.cfg)
+	f, err := os.Open(cfgPath)
 	if err != nil {
 		return nil, err
 	}
@@ -165,6 +170,37 @@ func (m *Main) loadConfiguration() (configuration.Configuration, error) {
 	}
 
 	return cfg, nil
+}
+
+func (m *Main) loadUserDatasources() ([]model.Datasource, error) {
+	// If we could not load user datasources do not fail.
+	f, err := os.Open(m.flags.userDSPath)
+	if err != nil {
+		m.logger.Warnf("could not load '%s' user datasources file: %s", m.flags.userDSPath, err)
+		return []model.Datasource{}, nil
+	}
+	defer f.Close()
+
+	cfg, err := configuration.JSONLoader{}.Load(f)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg.Datasources()
+}
+
+func (m *Main) createGatherer(dashboardDss, userDss []model.Datasource) (metric.Gatherer, error) {
+	gatherer, err := metricdatasource.NewGatherer(metricdatasource.ConfigGatherer{
+		DashboardDatasources: dashboardDss,
+		UserDatasources:      userDss,
+		Aliases:              m.flags.aliases,
+	})
+	if err != nil {
+		return nil, err
+	}
+	gatherer = metricmiddleware.Logger(m.logger, gatherer)
+
+	return gatherer, nil
 }
 
 // timeFromFlag gets the time from a flag based on a duration or on a
