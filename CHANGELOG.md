@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+
+- User defined datasources via flag and/or env var.
+- Alias flag to override dashboard datasource ID using user datasource IDs.
+- Fallback dashboard referenced datasources to user datasources.
+
 ## [0.1.0] - 2019-05-13
 
 ### Added
