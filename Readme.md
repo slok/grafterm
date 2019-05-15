@@ -112,7 +112,7 @@ Dashboard referenced datasources on the queries can be override.
 
 #### User datasource
 
-Grafterm dashboards can have default datasources but the user can override these datasources using a datasources config file. This file has the same format as the dashboard configuration file but will ignore anything other than the `datasources` block). Example:
+Grafterm dashboards can have default datasources but the user can override these datasources using a datasources config file. This file has the same format as the dashboard configuration file but will ignore anything other than the `datasources` block. Example:
 
 ```json
 {
