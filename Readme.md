@@ -1,4 +1,4 @@
-# Grafterm [![CircleCI][circleci-image]][circleci-url]
+# Grafterm [![CircleCI][circleci-image]][circleci-url] [![Go Report Card][go-reportcard-image]][go-reportcard-url]
 
 Visualize metrics dashboards on the terminal, like a simplified and minimalist version of [Grafana] for terminal.
 
@@ -154,8 +154,10 @@ For example, the dashboard uses a datasource named `prometheus-2b`, and we want 
 
 This project would not be possible without the effort of many people and projects but specially [Grafana] for the inspiration, ideas and the project itself, and [Termdash] for the rendering of all those fancy graphs on the terminal.
 
-[circleci-image]: https://circleci.com/gh/slok/grafterm.svg?style=svg
+[circleci-image]: https://img.shields.io/circleci/project/github/slok/grafterm/master.svg
 [circleci-url]: https://circleci.com/gh/slok/grafterm
+[go-reportcard-image]: https://goreportcard.com/badge/github.com/slok/grafterm
+[go-reportcard-url]: https://goreportcard.com/report/github.com/slok/grafterm
 [grafana]: https://grafana.com/
 [termdash]: https://github.com/mum4k/termdash
 [releases]: https://github.com/slok/grafterm/releases
