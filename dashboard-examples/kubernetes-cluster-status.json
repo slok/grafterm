@@ -1,0 +1,184 @@
+{
+  "version": "v1",
+  "datasources": {
+    "prometheus": {
+      "prometheus": {
+        "address": "http://127.0.0.1:9090"
+      }
+    }
+  },
+  "dashboard": {
+    "variables": {
+      "interval": {
+        "interval": { "steps": 50 }
+      }
+    },
+    "widgets": [
+      {
+        "title": "Control plane UP",
+        "gridPos": { "w": 50 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "sum(up{job=~\"apiserver|kube-scheduler|kube-controller-manager\"} == 0) or vector(0)"
+          },
+          "valueText": "{{ if (gt .value 0.0) }}DOWN{{else}}UP{{end}}",
+          "thresholds": [
+            { "color": "#299c46" },
+            { "color": "#d44a3a", "startValue": 1 }
+          ]
+        }
+      },
+      {
+        "title": "Alerts firing",
+        "gridPos": { "w": 50 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "sum(ALERTS{alertstate=\"firing\",alertname!=\"DeadMansSwitch\"})"
+          },
+          "unit": "none",
+          "thresholds": [
+            { "color": "#299c46" },
+            { "startValue": 3, "color": "#FF780A" },
+            { "startValue": 5, "color": "#d44a3a" }
+          ]
+        }
+      },
+      {
+        "title": "APIservers UP",
+        "gridPos": { "w": 25 },
+        "gauge": {
+          "percentValue": true,
+          "max": 100,
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "(sum(up{job=\"apiserver\"} == 1) / count(up{job=\"apiserver\"})) * 100"
+          },
+          "thresholds": [
+            { "color": "#d44a3a" },
+            { "startValue": 50, "color": "#FF780A" },
+            { "startValue": 80, "color": "#299c46" }
+          ]
+        }
+      },
+      {
+        "title": "Kubelets UP",
+        "gridPos": { "w": 25 },
+        "gauge": {
+          "percentValue": true,
+          "max": 100,
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "(sum(up{job=\"kubelet\"} == 1) / count(up{job=\"kubelet\"})) * 100"
+          },
+          "thresholds": [
+            { "color": "#d44a3a" },
+            { "startValue": 50, "color": "#FF780A" },
+            { "startValue": 80, "color": "#299c46" }
+          ]
+        }
+      },
+      {
+        "title": "Schedulers UP",
+        "gridPos": { "w": 25 },
+        "gauge": {
+          "percentValue": true,
+          "max": 100,
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "(sum(up{job=\"kube-scheduler\"} == 1) / count(up{job=\"kube-scheduler\"})) * 100"
+          },
+          "thresholds": [
+            { "color": "#d44a3a" },
+            { "startValue": 50, "color": "#FF780A" },
+            { "startValue": 80, "color": "#299c46" }
+          ]
+        }
+      },
+      {
+        "title": "Crashlooping control-plane pods",
+        "gridPos": { "w": 25 },
+        "singlestat": {
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "count(increase(kube_pod_container_status_restarts{namespace=~\"kube-system|tectonic-system\"}[1h])) or vector(0)"
+          },
+          "thresholds": [
+            { "color": "#299c46" },
+            { "startValue": 1, "color": "#FF780A" },
+            { "startValue": 3, "color": "#d44a3a" }
+          ]
+        }
+      },
+      {
+        "title": "CPU utilization",
+        "gridPos": { "w": 25 },
+        "gauge": {
+          "percentValue": true,
+          "max": 100,
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "sum(100 - (avg by (instance) (rate(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\"}[5m])) * 100)) / count(node_cpu_seconds_total{job=\"node-exporter\",mode=\"idle\"})"
+          },
+          "thresholds": [
+            { "color": "#299c46" },
+            { "startValue": 80, "color": "#FF780A" },
+            { "startValue": 90, "color": "#d44a3a" }
+          ]
+        }
+      },
+      {
+        "title": "Memory utilization",
+        "gridPos": { "w": 25 },
+        "gauge": {
+          "percentValue": true,
+          "max": 100,
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "((sum(node_memory_MemTotal_bytes) - sum(node_memory_MemFree_bytes) - sum(node_memory_Buffers_bytes) - sum(node_memory_Cached_bytes)) / sum(node_memory_MemTotal_bytes)) * 100"
+          },
+          "thresholds": [
+            { "color": "#299c46" },
+            { "startValue": 80, "color": "#FF780A" },
+            { "startValue": 90, "color": "#d44a3a" }
+          ]
+        }
+      },
+      {
+        "title": "Filesystem utilization",
+        "gridPos": { "w": 25 },
+        "gauge": {
+          "percentValue": true,
+          "max": 100,
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "(sum(node_filesystem_size_bytes{device!=\"rootfs\"}) - sum(node_filesystem_free_bytes{device!=\"rootfs\"})) / sum(node_filesystem_size_bytes{device!=\"rootfs\"})"
+          },
+          "thresholds": [
+            { "color": "#299c46" },
+            { "startValue": 80, "color": "#FF780A" },
+            { "startValue": 90, "color": "#d44a3a" }
+          ]
+        }
+      },
+      {
+        "title": "Pod utilization",
+        "gridPos": { "w": 25 },
+        "gauge": {
+          "percentValue": true,
+          "max": 100,
+          "query": {
+            "datasourceID": "prometheus",
+            "expr": "100 - (sum(kube_node_status_capacity_pods) - sum(kube_pod_info)) / sum(kube_node_status_capacity_pods) * 100"
+          },
+          "thresholds": [
+            { "color": "#299c46" },
+            { "startValue": 80, "color": "#FF780A" },
+            { "startValue": 90, "color": "#d44a3a" }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -29,4 +29,10 @@ This is a gitlab based dashboard example.
 
 ![](https://i.imgur.com/RGlygHF.png)
 
+## Kubernetes status
+
+This is a port from [this](https://grafana.com/dashboards/5315) Grafana dashboard (with very small changes). Mainly shows the usage of the gauges.
+
+![](https://i.imgur.com/N5jtCFT.png)
+
 [red]: https://www.weave.works/blog/the-red-method-key-metrics-for-microservices-architecture/
