@@ -26,6 +26,8 @@ Download the binaries from [releases]
 
 ## Running options
 
+Exit with `q` or `Esc`
+
 ### Simple
 
 ```bash
