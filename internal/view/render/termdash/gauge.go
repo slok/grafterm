@@ -77,8 +77,8 @@ func (g *gauge) SetColor(hexColor string) error {
 		return err
 	}
 
-	// Replace the instance.
-	g.widget = d
-
+	// Replace the instance value. We need to replace the content of the widget,
+	// is ok to copy the value in this case although the widget donut has a mutex.
+	*g.widget = *d
 	return nil
 }
