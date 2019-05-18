@@ -95,9 +95,6 @@
         "title": "GC duration",
         "gridPos": { "w": 50 },
         "graph": {
-          "visualization": {
-            "yAxis": { "unit": "second" }
-          },
           "queries": [
             {
               "datasourceID": "prometheus",
@@ -106,6 +103,7 @@
             }
           ],
           "visualization": {
+            "yAxis": { "unit": "second" },
             "seriesOverride": [
               { "regex": "^Q0$", "color": "#F9E2D2" },
               { "regex": "^Q0.25$", "color": "#F2C96D" },
