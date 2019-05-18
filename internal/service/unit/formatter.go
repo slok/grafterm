@@ -31,6 +31,8 @@ func NewUnitFormatter(unit string) (Formatter, error) {
 		f = ratioFormatter
 	case "s", "second", "seconds":
 		f = secondFormatter
+	case "ms", "millisecond", "milliseconds":
+		f = millisecondFormatter
 	case "reqps":
 		f = newSuffixFormatter(" reqps")
 	case "byte", "bytes":
@@ -75,6 +77,13 @@ func ratioFormatter(value float64, decimals int) string {
 //  - 300: 5m
 func secondFormatter(value float64, decimals int) string {
 	t := time.Duration(value * float64(time.Second))
+	return durationSingleUnitPrettyFormat(t, decimals)
+}
+
+// millisecondFormatter is like secondFormatter but with
+// milliseconds as base.
+func millisecondFormatter(value float64, decimals int) string {
+	t := time.Duration(value * float64(time.Millisecond))
 	return durationSingleUnitPrettyFormat(t, decimals)
 }
 

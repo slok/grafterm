@@ -56,6 +56,11 @@ func TestUnitFormatter(t *testing.T) {
 		"Seconds to h with decimals.":          {unit: "seconds", value: 2*60*60 + 47, decimals: 4, expStr: "2.0131 h"},
 		"Seconds to d with decimals.":          {unit: "seconds", value: 5*24*60*60 + 92012, decimals: 6, expStr: "6.064954 d"},
 
+		// MillisecondsDuration.
+		"Milliseconds with 0.":                      {unit: "milliseconds", value: 0, decimals: 0, expStr: "0 ns"},
+		"Milliseconds with minus and no decimals.":  {unit: "milliseconds", value: -1500, decimals: 0, expStr: "-2 s"},
+		"Milliseconds to minutes with decimals.":    {unit: "milliseconds", value: 150*1000 + 47, decimals: 4, expStr: "2.5008 m"},
+
 		// Request/s.
 		"Reqps with no decimals.": {unit: "reqps", value: 1.12345, decimals: 0, expStr: "1 reqps"},
 		"Reqps with 2 decimals.":  {unit: "reqps", value: 0.12345, decimals: 2, expStr: "0.12 reqps"},
