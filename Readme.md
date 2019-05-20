@@ -11,7 +11,7 @@ Visualize metrics dashboards on the terminal, like a simplified and minimalist v
 - User stored datasources.
 - Override dashboard datasource ID to different datasource ID configured by the user.
 - Custom dashboards based on JSON configuration files.
-- Extensible metrics datasource implementation (Prometheus included).
+- Extensible metrics datasource implementation (Prometheus and Graphite included).
 - Templating of variables.
 - Auto time interval adjustment for queries.
 - Auto unit formatting on widgets.
@@ -131,6 +131,9 @@ Grafterm dashboards can have default datasources but the user can override these
     },
     "m3db": {
       "prometheus": { "address": "http://127.0.0.1:9093" }
+    },
+    "wikimedia": {
+      "graphite": { "address": "https://graphite.wikimedia.org" }
     }
   }
 }

@@ -29,7 +29,7 @@ func TestGathererGatherSingle(t *testing.T) {
 	datasources2 := []model.Datasource{
 		model.Datasource{
 			ID:               "ds2",
-			DatasourceSource: model.DatasourceSource{Fake: &model.FakeDatasource{}},
+			DatasourceSource: model.DatasourceSource{Graphite: &model.GraphiteDatasource{}},
 		},
 		model.Datasource{
 			ID:               "ds3",
@@ -146,6 +146,11 @@ func TestGathererGatherSingle(t *testing.T) {
 					return g, nil
 				},
 				CreatePrometheusFunc: func(_ model.PrometheusDatasource) (metric.Gatherer, error) {
+					g := mgs[gCount]
+					gCount++
+					return g, nil
+				},
+				CreateGraphiteFunc: func(_ model.GraphiteDatasource) (metric.Gatherer, error) {
 					g := mgs[gCount]
 					gCount++
 					return g, nil

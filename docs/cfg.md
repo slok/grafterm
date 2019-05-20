@@ -29,6 +29,12 @@ This main block contains a list of the datasources being used by the dashboard, 
       "prometheus": {
         "address": "http://127.0.0.1:9091"
       }
+    },
+    {
+      "id": "ds3",
+      "graphite": {
+        "address": "http://127.0.0.1:7123"
+      }
     }
   ],
 ```
@@ -42,6 +48,14 @@ This will gather metrics from Prometheus.
 Options:
 
 - `address`: Address to Prometheus API
+
+#### [Graphite]
+
+This will gather metrics from Graphite API backends.
+
+Options:
+
+- `address`: Address to Graphite API
 
 ## Dashboard
 
@@ -345,3 +359,4 @@ Units come in combination with the `decimals` settings.
 
 [dashboard-examples]: /dashboard-examples
 [prometheus]: http://prometheus.io
+[graphite]: http://graphiteapp.org

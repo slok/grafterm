@@ -4,6 +4,7 @@
 
 ### Added
 
+- Graphite datasource.
 - Milliseconds unit conversion.
 - Quit grafterm with `Esc` key.
 - User defined datasources via flag and/or env var.

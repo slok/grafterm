@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	prometheusapi "github.com/prometheus/client_golang/api"
@@ -12,7 +13,12 @@ import (
 	"github.com/slok/grafterm/internal/model"
 	"github.com/slok/grafterm/internal/service/metric"
 	"github.com/slok/grafterm/internal/service/metric/fake"
+	"github.com/slok/grafterm/internal/service/metric/graphite"
 	"github.com/slok/grafterm/internal/service/metric/prometheus"
+)
+
+const (
+	defGraphiteTimeout = 7 * time.Second
 )
 
 // ConfigGatherer is the configuration of the multi Gatherer.
@@ -32,6 +38,8 @@ type ConfigGatherer struct {
 	CreateFakeFunc func(ds model.FakeDatasource) (metric.Gatherer, error)
 	// CreatePrometheusFunc is the function that will be called to create Prometheus gatherers.
 	CreatePrometheusFunc func(ds model.PrometheusDatasource) (metric.Gatherer, error)
+	// CreateGraphiteFunc is the function that will be called to create Graphite gatherers.
+	CreateGraphiteFunc func(ds model.GraphiteDatasource) (metric.Gatherer, error)
 }
 
 func (c *ConfigGatherer) defaults() {
@@ -58,6 +66,24 @@ func (c *ConfigGatherer) defaults() {
 			return g, nil
 		}
 	}
+
+	// Set default creator function for Graphite.
+	if c.CreateGraphiteFunc == nil {
+		c.CreateGraphiteFunc = func(ds model.GraphiteDatasource) (metric.Gatherer, error) {
+			g, err := graphite.NewGatherer(graphite.ConfigGatherer{
+				GraphiteAPIURL: ds.Address,
+				HTTPCli: &http.Client{
+					Timeout: defGraphiteTimeout,
+				},
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			return g, nil
+		}
+	}
+
 	if c.Aliases == nil {
 		c.Aliases = map[string]string{}
 	}
@@ -148,6 +174,8 @@ func createGatherer(cfg ConfigGatherer, ds model.Datasource) (metric.Gatherer, e
 	switch {
 	case ds.Prometheus != nil:
 		return cfg.CreatePrometheusFunc(*ds.Prometheus)
+	case ds.Graphite != nil:
+		return cfg.CreateGraphiteFunc(*ds.Graphite)
 	case ds.Fake != nil:
 		return cfg.CreateFakeFunc(*ds.Fake)
 	}
