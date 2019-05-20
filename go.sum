@@ -1,5 +1,7 @@
 github.com/DATA-DOG/go-sqlmock v1.3.3 h1:CWUqKXe0s8A2z6qCgkP4Kru7wC11YoAnoupUKFDnH08=
 github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
+github.com/JensRantil/graphite-client v0.0.0-20151206234601-d93bf4b72f5a h1:hA3QWB8sdCKmwoHbQQPy8ZJiUpE5mSjz9b7XS6c+J6M=
+github.com/JensRantil/graphite-client v0.0.0-20151206234601-d93bf4b72f5a/go.mod h1:KLFQDNor8WMbNo97GenEJDe+IylBLdNS5kgUJHfsoXI=
 github.com/alecthomas/kingpin v2.2.6+incompatible h1:5svnBTFgJjZvGKyYBtMB0+m5wvrbUHiqye8wRJMlnYI=
 github.com/alecthomas/kingpin v2.2.6+incompatible/go.mod h1:59OFYbFVLKQKq+mqrL6Rw5bR0c3ACQaawgXx0QYndlE=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc h1:cAKDfWh5VpdgMhJosfJnn5/FoN2SRZ4p7fJNX58YPaU=
