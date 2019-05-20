@@ -59,6 +59,17 @@ func TestValidateDatasource(t *testing.T) {
 			},
 			expErr: true,
 		},
+		{
+			name: "A Graphite datasource without address should error.",
+			ds: func() model.Datasource {
+				d := getBaseDatasource()
+				d.Graphite = &model.GraphiteDatasource{
+					Address: "",
+				}
+				return d
+			},
+			expErr: true,
+		},
 	}
 
 	for _, test := range tests {
