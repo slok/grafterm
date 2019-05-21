@@ -141,13 +141,22 @@ func (g *graph) transformToRenderable(cfg syncConfig, series []metricSeries, xLa
 		}
 		templateData := cfg.templateData.WithData(tplLabels)
 
+		// Get legend and series override based on the legend.
+		legend := g.legend(templateData, serie)
+		seriesOverride, _ := seriesOverride(g.widgetCfg.Graph.Visualization.SeriesOverride, legend)
+
 		// Init data.
+		// This indexes will be used to query the different slices
+		// into one single time based XY graph.
 		values := make([]*render.Value, len(xLabels))
 		timeIndex := 0
 		metricIndex := 0
 		valueIndex := 0
 
-		// For every value/datapoint.
+		// For every value/datapoint we will find where does it belong, to
+		// do so we will check one by one each of the metrics if belongs
+		// to a current time range, we do this checking if the metric timestamp
+		// is after the current timestamp and before the next timestamp.
 		for {
 			if metricIndex >= len(serie.series.Metrics) ||
 				timeIndex >= len(indexedTime) ||
@@ -170,7 +179,22 @@ func (g *graph) transformToRenderable(cfg syncConfig, series []metricSeries, xLa
 			// belong to this iteration, and belong to a future one.
 			if timeIndex < len(indexedTime)-1 {
 				nextTS := indexedTime[timeIndex+1]
+				// If after means we should ignore this range, so we
+				// check the null policy in case we need to fill the
+				// empty datapoint space.
 				if m.TS.After(nextTS) {
+					// The null point mode setting is used to fill the gaps in the values,
+					// sometimes the graph has N datapoints and we don't have enough datapoints
+					// to create a good renderable graph. This way we can fill this gaps and make
+					// the graph renderable.
+					switch seriesOverride.NullPointMode {
+					case model.NullPointModeAsZero:
+						v := render.Value(0)
+						values[valueIndex] = &v
+					case model.NullPointModeConnected:
+						v := render.Value(m.Value)
+						values[valueIndex] = &v
+					}
 					timeIndex++
 					valueIndex++
 					continue
@@ -183,9 +207,7 @@ func (g *graph) transformToRenderable(cfg syncConfig, series []metricSeries, xLa
 			metricIndex++
 			timeIndex++
 		}
-
 		// Create the renderable series.
-		legend := g.getLegend(templateData, serie)
 		serie := render.Series{
 			Label:   legend,
 			Color:   colorman.GetColorFromSeriesLegend(*g.widgetCfg.Graph, legend),
@@ -215,10 +237,10 @@ func (g *graph) getWindowCapacity() int {
 	return cap
 }
 
-// getLegend will get the correct legend based on the query legend value.
+// legend will get the correct legend based on the query legend value.
 // if this is not set, the legend will be the ID of the metric series,
 // if set it will tru rendering the template using the template data.
-func (g *graph) getLegend(templateData template.Data, series metricSeries) string {
+func (g *graph) legend(templateData template.Data, series metricSeries) string {
 	// If no special legend then render with the ID.
 	if series.query.Legend == "" {
 		return series.series.ID

@@ -4,6 +4,7 @@
 
 ### Added
 
+- Add `nullPointMode` series override setting (with `zero` and `connected` strategies).
 - Graphite datasource.
 - Milliseconds unit conversion.
 - Quit grafterm with `Esc` key.

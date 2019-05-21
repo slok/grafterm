@@ -106,18 +106,13 @@ type widgetColorManager struct {
 // GetColorFromSeriesLegend will return the configured color for the matching regex with the series
 // legend, if there is no match then it will return a default color.
 func (w *widgetColorManager) GetColorFromSeriesLegend(cfg model.GraphWidgetSource, legend string) string {
-	// Check if it matches the regex of any of the visualization
-	// override series for a custom color.
-	for _, so := range cfg.Visualization.SeriesOverride {
-		if so.CompiledRegex != nil && so.CompiledRegex.MatchString(legend) && so.Color != "" {
-			return so.Color
-		}
+	so, ok := seriesOverride(cfg.Visualization.SeriesOverride, legend)
+	if ok && so.Color != "" {
+		return so.Color
 	}
 
 	// No match, get the next default color,
-	color := w.GetDefaultColor()
-
-	return color
+	return w.GetDefaultColor()
 }
 
 // GetColorFromThresholds gets the correct color based on a ordered list of thresholds and a value.
@@ -148,4 +143,17 @@ func (w *widgetColorManager) GetDefaultColor() string {
 	}
 
 	return color
+}
+
+// seriesOverride returns the series override based on the series legend
+// if it finds one, if not then it will return false in the ok return
+// argument.
+func seriesOverride(seriesOverride []model.SeriesOverride, legend string) (so model.SeriesOverride, ok bool) {
+	for _, so := range seriesOverride {
+		if so.CompiledRegex != nil && so.CompiledRegex.MatchString(legend) {
+			return so, true
+		}
+	}
+
+	return model.SeriesOverride{}, false
 }

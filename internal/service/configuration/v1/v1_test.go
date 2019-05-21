@@ -90,15 +90,18 @@ var (
 			"seriesOverride": [
               {
                 "regex": "p99",
-                "color": "#c15c17"
+								"color": "#c15c17",
+								"nullPointMode": "connected"
               },
               {
                 "regex": "p95",
-                "color": "#f2c96d"
+								"color": "#f2c96d",
+								"nullPointMode": "null"
               },
               {
                 "regex": "p50",
-                "color": "#f9ba8f"
+								"color": "#f9ba8f",
+								"nullPointMode": "zero"
               }
 			],
 			"yAxis": {
@@ -194,9 +197,9 @@ var (
 							RightSide: true,
 						},
 						SeriesOverride: []model.SeriesOverride{
-							{Regex: "p99", Color: "#c15c17", CompiledRegex: regexp.MustCompile("p99")},
-							{Regex: "p95", Color: "#f2c96d", CompiledRegex: regexp.MustCompile("p95")},
-							{Regex: "p50", Color: "#f9ba8f", CompiledRegex: regexp.MustCompile("p50")},
+							{Regex: "p99", Color: "#c15c17", CompiledRegex: regexp.MustCompile("p99"), NullPointMode: model.NullPointModeConnected},
+							{Regex: "p95", Color: "#f2c96d", CompiledRegex: regexp.MustCompile("p95"), NullPointMode: model.NullPointModeAsNull},
+							{Regex: "p50", Color: "#f9ba8f", CompiledRegex: regexp.MustCompile("p50"), NullPointMode: model.NullPointModeAsZero},
 						},
 						YAxis: model.YAxis{
 							ValueRepresentation: model.ValueRepresentation{

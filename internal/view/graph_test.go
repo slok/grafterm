@@ -2,6 +2,7 @@ package view_test
 
 import (
 	"context"
+	"regexp"
 	"testing"
 	"time"
 
@@ -295,6 +296,123 @@ func TestGraphWidget(t *testing.T) {
 				// Buckets index based on time (check xLabels to a fast view).
 				values := []*render.Value{nil, nil, nil, nil, rv(5), rv(6), nil, nil, rv(9), rv(10)}
 
+				series := []render.Series{
+					render.Series{
+						Label:   "test",
+						Color:   "#7EB26D", // First color.
+						XLabels: xLabels,
+						Values:  values,
+					},
+				}
+				mg.On("Sync", series).Return(nil)
+			},
+		},
+		{
+			name: "A graph with no data points at in-between and a null point mode set to zero mode should fill these values with zeroes.",
+			appCfg: view.AppConfig{
+				RefreshInterval: 1 * time.Second,
+				TimeRangeEnd:    t1,
+				TimeRangeStart:  t1Minus100m,
+			},
+			cfg: model.Widget{
+				WidgetSource: model.WidgetSource{
+					Graph: &model.GraphWidgetSource{
+						Queries: []model.Query{
+							model.Query{Expr: "test"},
+						},
+						Visualization: model.GraphVisualization{
+							SeriesOverride: []model.SeriesOverride{
+								model.SeriesOverride{
+									CompiledRegex: regexp.MustCompile(".*"),
+									NullPointMode: model.NullPointModeAsZero,
+								},
+							},
+						},
+					},
+				},
+			},
+			exp: func(t *testing.T, mc *mcontroller.Controller, mg *mrender.GraphWidget) {
+				mg.On("GetGraphPointQuantity").Return(graphCapacity)
+
+				// Having all datapoints we should render all the values.
+				seriess := []model.MetricSeries{
+					model.MetricSeries{
+						ID: "test",
+						Metrics: []model.Metric{
+							model.Metric{Value: 5, TS: t1Minus100m.Add(46 * time.Minute)},
+							model.Metric{Value: 6, TS: t1Minus100m.Add(53 * time.Minute)},
+							model.Metric{Value: 9, TS: t1Minus100m.Add(85 * time.Minute)},
+							model.Metric{Value: 10, TS: t1Minus100m.Add(92 * time.Minute)},
+						},
+					},
+				}
+
+				// Check it gets the step correctly.
+				expStep := 10 * time.Minute
+				mc.On("GetRangeMetrics", mock.Anything, mock.Anything, t1Minus100m, t1, expStep).Return(seriess, nil)
+
+				// Check the data for rendering is correctly calculated.
+				// Buckets index based on time (check xLabels to a fast view).
+				values := []*render.Value{rv(0), rv(0), rv(0), rv(0), rv(5), rv(6), rv(0), rv(0), rv(9), rv(10)}
+
+				series := []render.Series{
+					render.Series{
+						Label:   "test",
+						Color:   "#7EB26D", // First color.
+						XLabels: xLabels,
+						Values:  values,
+					},
+				}
+				mg.On("Sync", series).Return(nil)
+			},
+		},
+		{
+			name: "A graph with no data points at in-between and a null point mode set to connected mode should fill these values with with previous ones.",
+			appCfg: view.AppConfig{
+				RefreshInterval: 1 * time.Second,
+				TimeRangeEnd:    t1,
+				TimeRangeStart:  t1Minus100m,
+			},
+			cfg: model.Widget{
+				WidgetSource: model.WidgetSource{
+					Graph: &model.GraphWidgetSource{
+						Queries: []model.Query{
+							model.Query{Expr: "test"},
+						},
+						Visualization: model.GraphVisualization{
+							SeriesOverride: []model.SeriesOverride{
+								model.SeriesOverride{
+									CompiledRegex: regexp.MustCompile(".*"),
+									NullPointMode: model.NullPointModeConnected,
+								},
+							},
+						},
+					},
+				},
+			},
+			exp: func(t *testing.T, mc *mcontroller.Controller, mg *mrender.GraphWidget) {
+				mg.On("GetGraphPointQuantity").Return(graphCapacity)
+
+				// Having all datapoints we should render all the values.
+				seriess := []model.MetricSeries{
+					model.MetricSeries{
+						ID: "test",
+						Metrics: []model.Metric{
+							model.Metric{Value: 5, TS: t1Minus100m.Add(46 * time.Minute)},
+							model.Metric{Value: 6, TS: t1Minus100m.Add(53 * time.Minute)},
+							model.Metric{Value: 9, TS: t1Minus100m.Add(85 * time.Minute)},
+							model.Metric{Value: 10, TS: t1Minus100m.Add(92 * time.Minute)},
+						},
+					},
+				}
+
+				// Check it gets the step correctly.
+				expStep := 10 * time.Minute
+				mc.On("GetRangeMetrics", mock.Anything, mock.Anything, t1Minus100m, t1, expStep).Return(seriess, nil)
+
+				// Check the data for rendering is correctly calculated.
+				// Buckets index based on time (check xLabels to a fast view).
+				values := []*render.Value{rv(5), rv(5), rv(5), rv(5), rv(5), rv(6), rv(9), rv(9), rv(9), rv(10)}
 				series := []render.Series{
 					render.Series{
 						Label:   "test",
