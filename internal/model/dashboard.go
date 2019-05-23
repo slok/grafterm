@@ -132,12 +132,26 @@ type GraphVisualization struct {
 	YAxis          YAxis            `json:"yAxis,omitempty"`
 }
 
+// NullPointMode is how the graph should behave when there are null
+// points on the graph.
+type NullPointMode string
+
+const (
+	// NullPointModeAsNull is the default mode, it will not fill the null values.
+	NullPointModeAsNull NullPointMode = "null"
+	// NullPointModeConnected will try to connect the null values copying the nearest values.
+	NullPointModeConnected NullPointMode = "connected"
+	// NullPointModeAsZero will render the null values as zeroes.
+	NullPointModeAsZero NullPointMode = "zero"
+)
+
 // SeriesOverride will override visualization based on
 // the regex legend.
 type SeriesOverride struct {
-	Regex         string `json:"regex,omitempty"`
-	CompiledRegex *regexp.Regexp
-	Color         string `json:"color,omitempty"`
+	Regex         string         `json:"regex,omitempty"`
+	CompiledRegex *regexp.Regexp `json:"-"`
+	Color         string         `json:"color,omitempty"`
+	NullPointMode NullPointMode  `json:"nullPointMode,omitempty"`
 }
 
 // Legend controls the legend of a widget.
@@ -369,7 +383,25 @@ func (s SeriesOverride) validate() error {
 		return fmt.Errorf("a graph override for series should have a regex")
 	}
 
+	err := s.NullPointMode.validate()
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (n *NullPointMode) validate() error {
+	if *n == "" {
+		*n = NullPointModeAsNull
+	}
+
+	switch *n {
+	case NullPointModeAsNull, NullPointModeAsZero, NullPointModeConnected:
+		return nil
+	default:
+		return fmt.Errorf("null point mode '%s' is not a valid mode", *n)
+	}
 }
 
 func validateSeriesOverride(sos []SeriesOverride) ([]SeriesOverride, error) {

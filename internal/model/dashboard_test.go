@@ -393,6 +393,19 @@ func TestValidateDashboard(t *testing.T) {
 			},
 			expErr: true,
 		},
+		{
+			name: "A graph widget series override should have a valid null point mode.",
+			dashboard: func() model.Dashboard {
+				d := getBaseDashboard()
+				w := d.Widgets[2]
+				w.Graph.Visualization.SeriesOverride = []model.SeriesOverride{
+					model.SeriesOverride{Regex: "2..", Color: "#FFF000", NullPointMode: "wrong"},
+				}
+				d.Widgets[2] = w
+				return d
+			},
+			expErr: true,
+		},
 	}
 
 	for _, test := range tests {

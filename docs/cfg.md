@@ -268,11 +268,13 @@ This widget graphs different metric series in a range. It accepts multiple queri
         "seriesOverride": [
             {
                 "regex": "p99",
-                "color": "#c15c17"
+                "color": "#c15c17",
+                "nullPointMode": "connected"
             },
             {
                 "regex": "p95",
-                "color": "#f2c96d"
+                "color": "#f2c96d",
+                "nullPointMode": "zero"
             },
             {
                 "regex": "p50",
@@ -295,6 +297,9 @@ Each of the graph series can be override based on the legend displayed using a r
 The setting that can be override at this moment are:
 
 - `color`: The color of the displayed series.
+- `nullPointMode`: This will fill the datapoints on the graph that are missing with different strategies, this setting is useful for graphs that don't have sufficent metrics or are very spaced. The strategies are:
+  - `connected`: Will use an already near known value and use this.
+  - `zero`: Will fill the data point value with 0s.
 
 ##### `visualization.yAxis`
 
