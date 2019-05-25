@@ -1,4 +1,4 @@
-package view_test
+package widget_test
 
 import (
 	"context"
@@ -13,8 +13,10 @@ import (
 	mrender "github.com/slok/grafterm/internal/mocks/view/render"
 	"github.com/slok/grafterm/internal/model"
 	"github.com/slok/grafterm/internal/service/log"
-	"github.com/slok/grafterm/internal/view"
+	"github.com/slok/grafterm/internal/view/page/widget"
 	"github.com/slok/grafterm/internal/view/render"
+	"github.com/slok/grafterm/internal/view/sync"
+	"github.com/slok/grafterm/internal/view/template"
 )
 
 // helper function to convert a float to a render.Value pointer.
@@ -48,18 +50,15 @@ func TestGraphWidget(t *testing.T) {
 	graphCapacity := 10
 
 	tests := []struct {
-		name      string
-		dashboard model.Dashboard // Sets the dashboar configuration other that the force widget CFG on (widget cfg).
-		appCfg    view.AppConfig
-		cfg       model.Widget
-		exp       func(*testing.T, *mcontroller.Controller, *mrender.GraphWidget)
-		expErr    bool
+		name    string
+		syncReq *sync.Request
+		cfg     model.Widget
+		exp     func(*testing.T, *mcontroller.Controller, *mrender.GraphWidget)
+		expErr  bool
 	}{
 		{
-			name: "A graph without without capacity on the terminal should no render anything.",
-			appCfg: view.AppConfig{
-				RefreshInterval: 1 * time.Second,
-			},
+			name:    "A graph without without capacity on the terminal should no render anything.",
+			syncReq: &sync.Request{},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
 					Graph: &model.GraphWidgetSource{},
@@ -71,22 +70,12 @@ func TestGraphWidget(t *testing.T) {
 		},
 		{
 			name: "A graph with all data points should render all values (and using templated query should template the query).",
-			dashboard: model.Dashboard{
-				Variables: []model.Variable{
-					model.Variable{
-						Name: "testInterval",
-						VariableSource: model.VariableSource{
-							Constant: &model.ConstantVariableSource{
-								Value: "10m",
-							},
-						},
-					},
-				},
-			},
-			appCfg: view.AppConfig{
-				RefreshInterval: 1 * time.Second,
-				TimeRangeEnd:    t1,
-				TimeRangeStart:  t1Minus100m,
+			syncReq: &sync.Request{
+				TimeRangeEnd:   t1,
+				TimeRangeStart: t1Minus100m,
+				TemplateData: template.Data(map[string]interface{}{
+					"testInterval": "10m",
+				}),
 			},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
@@ -141,10 +130,9 @@ func TestGraphWidget(t *testing.T) {
 		},
 		{
 			name: "A graph with all data points and custom legend should render all values with the correct legend.",
-			appCfg: view.AppConfig{
-				RefreshInterval: 1 * time.Second,
-				TimeRangeEnd:    t1,
-				TimeRangeStart:  t1Minus100m,
+			syncReq: &sync.Request{
+				TimeRangeEnd:   t1,
+				TimeRangeStart: t1Minus100m,
 			},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
@@ -205,10 +193,9 @@ func TestGraphWidget(t *testing.T) {
 		},
 		{
 			name: "A graph with no data points at the begginning should ignore these first values.",
-			appCfg: view.AppConfig{
-				RefreshInterval: 1 * time.Second,
-				TimeRangeEnd:    t1,
-				TimeRangeStart:  t1Minus100m,
+			syncReq: &sync.Request{
+				TimeRangeEnd:   t1,
+				TimeRangeStart: t1Minus100m,
 			},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
@@ -258,10 +245,9 @@ func TestGraphWidget(t *testing.T) {
 		},
 		{
 			name: "A graph with no data points at in-between should ignore these values and make no value hops on the resulting values.",
-			appCfg: view.AppConfig{
-				RefreshInterval: 1 * time.Second,
-				TimeRangeEnd:    t1,
-				TimeRangeStart:  t1Minus100m,
+			syncReq: &sync.Request{
+				TimeRangeEnd:   t1,
+				TimeRangeStart: t1Minus100m,
 			},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
@@ -309,10 +295,9 @@ func TestGraphWidget(t *testing.T) {
 		},
 		{
 			name: "A graph with no data points at in-between and a null point mode set to zero mode should fill these values with zeroes.",
-			appCfg: view.AppConfig{
-				RefreshInterval: 1 * time.Second,
-				TimeRangeEnd:    t1,
-				TimeRangeStart:  t1Minus100m,
+			syncReq: &sync.Request{
+				TimeRangeEnd:   t1,
+				TimeRangeStart: t1Minus100m,
 			},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
@@ -368,10 +353,9 @@ func TestGraphWidget(t *testing.T) {
 		},
 		{
 			name: "A graph with no data points at in-between and a null point mode set to connected mode should fill these values with with previous ones.",
-			appCfg: view.AppConfig{
-				RefreshInterval: 1 * time.Second,
-				TimeRangeEnd:    t1,
-				TimeRangeStart:  t1Minus100m,
+			syncReq: &sync.Request{
+				TimeRangeEnd:   t1,
+				TimeRangeStart: t1Minus100m,
 			},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
@@ -426,10 +410,9 @@ func TestGraphWidget(t *testing.T) {
 		},
 		{
 			name: "A graph with no data points at the end should ignore these values and make no values on the end values.",
-			appCfg: view.AppConfig{
-				RefreshInterval: 1 * time.Second,
-				TimeRangeEnd:    t1,
-				TimeRangeStart:  t1Minus100m,
+			syncReq: &sync.Request{
+				TimeRangeEnd:   t1,
+				TimeRangeStart: t1Minus100m,
 			},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
@@ -486,24 +469,13 @@ func TestGraphWidget(t *testing.T) {
 			mgraph.On("GetWidgetCfg").Once().Return(test.cfg)
 			mc := &mcontroller.Controller{}
 			test.exp(t, mc, mgraph)
-			mr := &mrender.Renderer{}
-			mr.On("LoadDashboard", mock.Anything, mock.Anything).Once().Return([]render.Widget{mgraph}, nil)
 
-			var err error
-			ctx, cancel := context.WithCancel(context.Background())
-			go func() {
-				app := view.NewApp(test.appCfg, mc, mr, log.Dummy)
-				err = app.Run(ctx, test.dashboard)
-			}()
-
-			// Give time to sync.
-			time.Sleep(10 * time.Millisecond)
-			cancel()
+			graph := widget.NewGraph(mc, mgraph, log.Dummy)
+			err := graph.Sync(context.Background(), test.syncReq)
 
 			if test.expErr {
 				assert.Error(err)
 			} else if assert.NoError(err) {
-				mr.AssertExpectations(t)
 				mc.AssertExpectations(t)
 				mgraph.AssertExpectations(t)
 			}

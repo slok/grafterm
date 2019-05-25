@@ -1,9 +1,8 @@
-package view_test
+package widget_test
 
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -11,17 +10,17 @@ import (
 	mcontroller "github.com/slok/grafterm/internal/mocks/controller"
 	mrender "github.com/slok/grafterm/internal/mocks/view/render"
 	"github.com/slok/grafterm/internal/model"
-	"github.com/slok/grafterm/internal/service/log"
-	"github.com/slok/grafterm/internal/view"
-	"github.com/slok/grafterm/internal/view/render"
+	"github.com/slok/grafterm/internal/view/page/widget"
+	"github.com/slok/grafterm/internal/view/sync"
+	"github.com/slok/grafterm/internal/view/template"
 )
 
 func TestGaugeWidget(t *testing.T) {
 	tests := []struct {
 		name             string
-		dashboard        model.Dashboard
 		cfg              model.Widget
 		controllerMetric *model.Metric
+		syncReq          *sync.Request
 		expQuery         model.Query
 		exp              func(*mrender.GaugeWidget)
 		expErr           bool
@@ -31,6 +30,7 @@ func TestGaugeWidget(t *testing.T) {
 			controllerMetric: &model.Metric{
 				Value: 19,
 			},
+			syncReq: &sync.Request{},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
 					Gauge: &model.GaugeWidgetSource{},
@@ -45,17 +45,10 @@ func TestGaugeWidget(t *testing.T) {
 			controllerMetric: &model.Metric{
 				Value: 19,
 			},
-			dashboard: model.Dashboard{
-				Variables: []model.Variable{
-					model.Variable{
-						Name: "testInterval",
-						VariableSource: model.VariableSource{
-							Constant: &model.ConstantVariableSource{
-								Value: "10m",
-							},
-						},
-					},
-				},
+			syncReq: &sync.Request{
+				TemplateData: template.Data(map[string]interface{}{
+					"testInterval": "10m",
+				}),
 			},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
@@ -78,6 +71,7 @@ func TestGaugeWidget(t *testing.T) {
 			controllerMetric: &model.Metric{
 				Value: 19,
 			},
+			syncReq: &sync.Request{},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
 					Gauge: &model.GaugeWidgetSource{
@@ -94,6 +88,7 @@ func TestGaugeWidget(t *testing.T) {
 			controllerMetric: &model.Metric{
 				Value: 150,
 			},
+			syncReq: &sync.Request{},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
 					Gauge: &model.GaugeWidgetSource{
@@ -112,6 +107,7 @@ func TestGaugeWidget(t *testing.T) {
 			controllerMetric: &model.Metric{
 				Value: 19,
 			},
+			syncReq: &sync.Request{},
 			cfg: model.Widget{
 				WidgetSource: model.WidgetSource{
 					Gauge: &model.GaugeWidgetSource{
@@ -142,26 +138,14 @@ func TestGaugeWidget(t *testing.T) {
 
 			mc := &mcontroller.Controller{}
 			mc.On("GetSingleMetric", mock.Anything, test.expQuery, mock.Anything).Return(test.controllerMetric, nil)
-			mr := &mrender.Renderer{}
-			mr.On("LoadDashboard", mock.Anything, mock.Anything).Once().Return([]render.Widget{mgauge}, nil)
 
 			var err error
-			ctx, cancel := context.WithCancel(context.Background())
-			go func() {
-				app := view.NewApp(view.AppConfig{
-					RefreshInterval: 1 * time.Second,
-				}, mc, mr, log.Dummy)
-				err = app.Run(ctx, test.dashboard)
-			}()
-
-			// Give time to sync.
-			time.Sleep(10 * time.Millisecond)
-			cancel()
+			gauge := widget.NewGauge(mc, mgauge)
+			gauge.Sync(context.Background(), test.syncReq)
 
 			if test.expErr {
 				assert.Error(err)
 			} else if assert.NoError(err) {
-				mr.AssertExpectations(t)
 				mc.AssertExpectations(t)
 				mgauge.AssertExpectations(t)
 			}

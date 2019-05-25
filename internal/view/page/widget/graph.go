@@ -1,4 +1,4 @@
-package view
+package widget
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/slok/grafterm/internal/service/log"
 	"github.com/slok/grafterm/internal/service/unit"
 	"github.com/slok/grafterm/internal/view/render"
+	"github.com/slok/grafterm/internal/view/sync"
 	"github.com/slok/grafterm/internal/view/template"
 )
 
@@ -26,7 +27,8 @@ type graph struct {
 	logger         log.Logger
 }
 
-func newGraph(controller controller.Controller, rendererWidget render.GraphWidget, logger log.Logger) widget {
+// NewGraph returns new Graph widget syncer.
+func NewGraph(controller controller.Controller, rendererWidget render.GraphWidget, logger log.Logger) sync.Syncer {
 	wcfg := rendererWidget.GetWidgetCfg()
 
 	return &graph{
@@ -44,7 +46,7 @@ type metricSeries struct {
 	series model.MetricSeries
 }
 
-func (g *graph) sync(ctx context.Context, cfg syncConfig) error {
+func (g *graph) Sync(ctx context.Context, r *sync.Request) error {
 	// If already syncing ignore call.
 	if g.syncLock.Get() {
 		return nil
@@ -66,14 +68,14 @@ func (g *graph) sync(ctx context.Context, cfg syncConfig) error {
 	}
 
 	// Gather metrics from multiple queries.
-	start := cfg.timeRangeStart
-	end := cfg.timeRangeEnd
+	start := r.TimeRangeStart
+	end := r.TimeRangeEnd
 	step := end.Sub(start) / time.Duration(cap)
 	allSeries := []metricSeries{}
 	for _, q := range g.widgetCfg.Graph.Queries {
 		//TODO(slok): concurrent queries.
 		templatedQ := q
-		templatedQ.Expr = cfg.templateData.Render(q.Expr)
+		templatedQ.Expr = r.TemplateData.Render(q.Expr)
 		series, err := g.controller.GetRangeMetrics(ctx, templatedQ, start, end, step)
 		if err != nil {
 			return err
@@ -94,7 +96,7 @@ func (g *graph) sync(ctx context.Context, cfg syncConfig) error {
 
 	// Transform metric to the ones the render part understands.
 	xLabels, indexedTime := g.createIndexedSlices(start, end, step, cap)
-	series := g.transformToRenderable(cfg, metrics, xLabels, indexedTime)
+	series := g.transformToRenderable(r, metrics, xLabels, indexedTime)
 
 	// Update the render view value.
 	g.rendererWidget.Sync(series)
@@ -126,7 +128,7 @@ func (g *graph) createIndexedSlices(start, end time.Time, step time.Duration, ca
 	return xLabels, indexedTime
 }
 
-func (g *graph) transformToRenderable(cfg syncConfig, series []metricSeries, xLabels []string, indexedTime []time.Time) []render.Series {
+func (g *graph) transformToRenderable(r *sync.Request, series []metricSeries, xLabels []string, indexedTime []time.Time) []render.Series {
 	renderSeries := []render.Series{}
 
 	var colorman widgetColorManager
@@ -139,7 +141,7 @@ func (g *graph) transformToRenderable(cfg syncConfig, series []metricSeries, xLa
 		for k, v := range serie.series.Labels {
 			tplLabels[k] = v
 		}
-		templateData := cfg.templateData.WithData(tplLabels)
+		templateData := r.TemplateData.WithData(tplLabels)
 
 		// Get legend and series override based on the legend.
 		legend := g.legend(templateData, serie)

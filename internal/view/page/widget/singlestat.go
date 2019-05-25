@@ -1,4 +1,4 @@
-package view
+package widget
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/slok/grafterm/internal/model"
 	"github.com/slok/grafterm/internal/service/unit"
 	"github.com/slok/grafterm/internal/view/render"
+	"github.com/slok/grafterm/internal/view/sync"
 	"github.com/slok/grafterm/internal/view/template"
 )
 
@@ -26,7 +27,8 @@ type singlestat struct {
 	syncLock       syncingFlag
 }
 
-func newSinglestat(controller controller.Controller, rendererWidget render.SinglestatWidget) widget {
+// NewSinglestat returns a new Singlestat widget syncer.
+func NewSinglestat(controller controller.Controller, rendererWidget render.SinglestatWidget) sync.Syncer {
 	cfg := rendererWidget.GetWidgetCfg()
 
 	// Sort widget thresholds. Optimization so we don't have to sort every time we calculate
@@ -42,7 +44,7 @@ func newSinglestat(controller controller.Controller, rendererWidget render.Singl
 	}
 }
 
-func (s *singlestat) sync(ctx context.Context, cfg syncConfig) error {
+func (s *singlestat) Sync(ctx context.Context, r *sync.Request) error {
 	// If already syncinc ignore call.
 	if s.syncLock.Get() {
 		return nil
@@ -56,8 +58,8 @@ func (s *singlestat) sync(ctx context.Context, cfg syncConfig) error {
 
 	// Gather the value.
 	templatedQ := s.cfg.Singlestat.Query
-	templatedQ.Expr = cfg.templateData.Render(templatedQ.Expr)
-	m, err := s.controller.GetSingleMetric(ctx, templatedQ, cfg.timeRangeEnd)
+	templatedQ.Expr = r.TemplateData.Render(templatedQ.Expr)
+	m, err := s.controller.GetSingleMetric(ctx, templatedQ, r.TimeRangeEnd)
 	if err != nil {
 		return fmt.Errorf("error getting single instant metric: %s", err)
 	}
@@ -69,7 +71,7 @@ func (s *singlestat) sync(ctx context.Context, cfg syncConfig) error {
 	}
 
 	// Update the render view value.
-	text, err := s.valueToText(cfg, m.Value)
+	text, err := s.valueToText(r, m.Value)
 	if err != nil {
 		return fmt.Errorf("error rendering value: %s", err)
 	}
@@ -111,7 +113,7 @@ func (s *singlestat) changeWidgetColor(val float64) error {
 // valueToText will use a templater to get the text. The value
 // obtained for the widget will be available under the described
 // key.`
-func (s *singlestat) valueToText(cfg syncConfig, value float64) (string, error) {
+func (s *singlestat) valueToText(r *sync.Request, value float64) (string, error) {
 	var templateData template.Data
 
 	// If we have a unit set transform.
@@ -123,11 +125,11 @@ func (s *singlestat) valueToText(cfg syncConfig, value float64) (string, error) 
 		if err != nil {
 			return "", err
 		}
-		templateData = cfg.templateData.WithData(map[string]interface{}{
+		templateData = r.TemplateData.WithData(map[string]interface{}{
 			valueTemplateKey: f(value, wcfg.Decimals),
 		})
 	} else {
-		templateData = cfg.templateData.WithData(map[string]interface{}{
+		templateData = r.TemplateData.WithData(map[string]interface{}{
 			valueTemplateKey: value,
 		})
 	}
