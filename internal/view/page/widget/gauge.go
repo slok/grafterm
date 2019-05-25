@@ -1,4 +1,4 @@
-package view
+package widget
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"github.com/slok/grafterm/internal/controller"
 	"github.com/slok/grafterm/internal/model"
 	"github.com/slok/grafterm/internal/view/render"
+	"github.com/slok/grafterm/internal/view/sync"
 )
 
 // gauge is a widget that represents a metric in percent format.
@@ -19,7 +20,8 @@ type gauge struct {
 	syncLock       syncingFlag
 }
 
-func newGauge(controller controller.Controller, rendererWidget render.GaugeWidget) widget {
+// NewGauge returns a new Gauge widget that is a syncer.
+func NewGauge(controller controller.Controller, rendererWidget render.GaugeWidget) sync.Syncer {
 	cfg := rendererWidget.GetWidgetCfg()
 
 	// Sort gauge thresholds. Optimization so we don't have to sort every time we calculate
@@ -35,7 +37,7 @@ func newGauge(controller controller.Controller, rendererWidget render.GaugeWidge
 	}
 }
 
-func (g *gauge) sync(ctx context.Context, cfg syncConfig) error {
+func (g *gauge) Sync(ctx context.Context, r *sync.Request) error {
 	// If already syncinc ignore call.
 	if g.syncLock.Get() {
 		return nil
@@ -49,8 +51,8 @@ func (g *gauge) sync(ctx context.Context, cfg syncConfig) error {
 
 	// Gather the gauge value.
 	templatedQ := g.cfg.Gauge.Query
-	templatedQ.Expr = cfg.templateData.Render(templatedQ.Expr)
-	m, err := g.controller.GetSingleMetric(ctx, templatedQ, cfg.timeRangeEnd)
+	templatedQ.Expr = r.TemplateData.Render(templatedQ.Expr)
+	m, err := g.controller.GetSingleMetric(ctx, templatedQ, r.TimeRangeEnd)
 	if err != nil {
 		return fmt.Errorf("error getting single instant metric: %s", err)
 	}

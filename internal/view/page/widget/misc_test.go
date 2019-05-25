@@ -1,4 +1,4 @@
-package view
+package widget
 
 import (
 	"regexp"

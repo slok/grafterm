@@ -1,19 +1,21 @@
-package view
+package page
 
 import (
 	"context"
 	"testing"
 
-	"github.com/slok/grafterm/internal/view/template"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/slok/grafterm/internal/view/sync"
+	"github.com/slok/grafterm/internal/view/template"
 )
 
 type mockWidget struct {
-	calledCfg syncConfig
+	calledReq *sync.Request
 }
 
-func (m *mockWidget) sync(_ context.Context, cfg syncConfig) error {
-	m.calledCfg = cfg
+func (m *mockWidget) Sync(_ context.Context, r *sync.Request) error {
+	m.calledReq = r
 	return nil
 }
 
@@ -21,7 +23,7 @@ func TestWidgetDataMiddleware(t *testing.T) {
 	tests := map[string]struct {
 		data         template.Data
 		overrideData template.Data
-		cfg          syncConfig
+		syncReq      *sync.Request
 		expData      template.Data
 	}{
 		"Storing static data should add that data on every call to the sync.": {
@@ -31,8 +33,8 @@ func TestWidgetDataMiddleware(t *testing.T) {
 				"lastName": "Wayne",
 				"location": "Gotham",
 			},
-			cfg: syncConfig{
-				templateData: map[string]interface{}{
+			syncReq: &sync.Request{
+				TemplateData: map[string]interface{}{
 					"location":  "Arkham asylum",
 					"transport": "batmobile",
 				},
@@ -52,8 +54,8 @@ func TestWidgetDataMiddleware(t *testing.T) {
 				"lastName": "Wayne",
 				"location": "Gotham",
 			},
-			cfg: syncConfig{
-				templateData: map[string]interface{}{
+			syncReq: &sync.Request{
+				TemplateData: map[string]interface{}{
 					"location":  "Arkham asylum",
 					"transport": "batmobile",
 				},
@@ -79,8 +81,8 @@ func TestWidgetDataMiddleware(t *testing.T) {
 				"lastName": "Wayne2",
 				"location": "Gotham",
 			},
-			cfg: syncConfig{
-				templateData: map[string]interface{}{
+			syncReq: &sync.Request{
+				TemplateData: map[string]interface{}{
 					"location":  "Arkham asylum",
 					"transport": "batmobile",
 				},
@@ -100,9 +102,9 @@ func TestWidgetDataMiddleware(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			mw := &mockWidget{}
 			w := withWidgetDataMiddleware(test.data, test.overrideData, mw)
-			w.sync(context.TODO(), test.cfg)
+			w.Sync(context.TODO(), test.syncReq)
 
-			assert.Equal(t, test.expData, mw.calledCfg.templateData)
+			assert.Equal(t, test.expData, mw.calledReq.TemplateData)
 		})
 	}
 }

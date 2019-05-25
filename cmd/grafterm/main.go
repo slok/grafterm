@@ -18,6 +18,8 @@ import (
 	metricdatasource "github.com/slok/grafterm/internal/service/metric/datasource"
 	metricmiddleware "github.com/slok/grafterm/internal/service/metric/middleware"
 	"github.com/slok/grafterm/internal/view"
+	"github.com/slok/grafterm/internal/view/page"
+	"github.com/slok/grafterm/internal/view/render"
 	"github.com/slok/grafterm/internal/view/render/termdash"
 )
 
@@ -75,7 +77,6 @@ func (m *Main) Run() error {
 	// Create renderer.
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
 	renderer, err := termdash.NewTermDashboard(cancel, m.logger)
 	if err != nil {
 		return err
@@ -110,7 +111,6 @@ func (m *Main) Run() error {
 		appcfg := view.AppConfig{
 			RefreshInterval:   m.flags.refreshInterval,
 			RelativeTimeRange: m.flags.relativeDur,
-			OverrideVariables: m.flags.variables,
 		}
 
 		// Only set fixed time if start set.
@@ -133,15 +133,19 @@ func (m *Main) Run() error {
 			}
 		}
 
-		app := view.NewApp(appcfg, ctrl, renderer, m.logger)
 		ds, err := cfg.Dashboard()
+		if err != nil {
+			return err
+		}
+
+		app, err := m.createApp(ctx, appcfg, ds, ctrl, renderer)
 		if err != nil {
 			return err
 		}
 
 		g.Add(
 			func() error {
-				err := app.Run(ctx, ds)
+				err := app.Run(ctx)
 				if err != nil {
 					return err
 				}
@@ -201,6 +205,23 @@ func (m *Main) createGatherer(dashboardDss, userDss []model.Datasource) (metric.
 	gatherer = metricmiddleware.Logger(m.logger, gatherer)
 
 	return gatherer, nil
+}
+
+func (m *Main) createApp(ctx context.Context, appCfg view.AppConfig, dashboard model.Dashboard, ctrl controller.Controller, renderer render.Renderer) (*view.App, error) {
+	dashCfg := page.DashboardCfg{
+		AppRelativeTimeRange: m.flags.relativeDur,
+		AppOverrideVariables: m.flags.variables,
+		Controller:           ctrl,
+		Dashboard:            dashboard,
+		Renderer:             renderer,
+	}
+
+	syncer, err := page.NewDashboard(ctx, dashCfg, m.logger)
+	if err != nil {
+		return nil, err
+	}
+	app := view.NewApp(appCfg, syncer, m.logger)
+	return app, nil
 }
 
 // timeFromFlag gets the time from a flag based on a duration or on a

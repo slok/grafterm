@@ -1,8 +1,9 @@
-package view
+package page
 
 import (
 	"context"
 
+	"github.com/slok/grafterm/internal/view/sync"
 	"github.com/slok/grafterm/internal/view/template"
 )
 
@@ -22,7 +23,7 @@ import (
 // 1- OverrideData
 // 2- SyncData
 // 3- StaticData
-func withWidgetDataMiddleware(data template.Data, overrideData template.Data, next widget) widget {
+func withWidgetDataMiddleware(data template.Data, overrideData template.Data, next sync.Syncer) sync.Syncer {
 	return &widgetDataMiddleware{
 		staticData:   data,
 		overrideData: overrideData,
@@ -33,15 +34,15 @@ func withWidgetDataMiddleware(data template.Data, overrideData template.Data, ne
 type widgetDataMiddleware struct {
 	staticData   template.Data
 	overrideData template.Data
-	next         widget
+	next         sync.Syncer
 }
 
-func (w widgetDataMiddleware) sync(ctx context.Context, cfg syncConfig) error {
+func (w widgetDataMiddleware) Sync(ctx context.Context, r *sync.Request) error {
 	// Add the sync data to the static data and place it again on the cfg.
-	data := w.staticData.WithData(cfg.templateData)
+	data := w.staticData.WithData(r.TemplateData)
 	// Override the data asked by the user.
 	data = data.WithData(w.overrideData)
 
-	cfg.templateData = data
-	return w.next.sync(ctx, cfg)
+	r.TemplateData = data
+	return w.next.Sync(ctx, r)
 }
