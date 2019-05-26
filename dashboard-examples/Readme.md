@@ -35,4 +35,10 @@ This is a port from [this](https://grafana.com/dashboards/5315) Grafana dashboar
 
 ![](https://i.imgur.com/N5jtCFT.png)
 
+## Wikimedia
+
+This is a port from [this](https://grafana.wikimedia.org/d/000000002/api-backend-summary) dashboard (with very small changes). It uses Graphite backend.
+
+![](https://i.imgur.com/bJjGtyF.png)
+
 [red]: https://www.weave.works/blog/the-red-method-key-metrics-for-microservices-architecture/

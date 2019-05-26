@@ -1,0 +1,114 @@
+{
+  "version": "v1",
+  "datasources": {
+    "graphite": {
+      "graphite": {
+        "address": "https://graphite.wikimedia.org"
+      }
+    }
+  },
+  "dashboard": {
+    "widgets": [
+      {
+        "title": "API request rate",
+        "gridPos": { "w": 50 },
+        "graph": {
+          "visualization": {
+            "yAxis": { "unit": "reqps", "decimals": 1 },
+            "seriesOverride": [{ "regex": ".*", "nullPointMode": "connected" }]
+          },
+          "queries": [
+            {
+              "datasourceID": "graphite",
+              "expr": "alias(sumSeries(MediaWiki.api.*.executeTiming.sample_rate), 'rate')"
+            },
+            {
+              "datasourceID": "graphite",
+              "expr": "alias(sumSeries(timeShift(MediaWiki.api.*.executeTiming.sample_rate, '2d')), 'last week')"
+            }
+          ]
+        }
+      },
+      {
+        "title": "API request rate",
+        "gridPos": { "w": 50 },
+        "graph": {
+          "visualization": {
+            "yAxis": { "unit": "reqps", "decimals": 1 },
+            "seriesOverride": [{ "regex": ".*", "nullPointMode": "connected" }]
+          },
+          "queries": [
+            {
+              "datasourceID": "graphite",
+              "expr": "aliasByNode(highestAverage(MediaWiki.api.*.executeTiming.sample_rate, 10), 2)"
+            }
+          ]
+        }
+      },
+      {
+        "title": "Mean latency",
+        "gridPos": { "w": 70 },
+        "graph": {
+          "visualization": {
+            "yAxis": { "unit": "milliseconds" },
+            "legend": { "disable": true },
+            "seriesOverride": [{ "regex": ".*", "nullPointMode": "connected" }]
+          },
+          "queries": [
+            {
+              "datasourceID": "graphite",
+              "expr": "divideSeries(sumSeries(MediaWiki.api.*.executeTiming.sum),sumSeries(MediaWiki.api.*.executeTiming.count))"
+            }
+          ]
+        }
+      },
+      {
+        "title": "Mean latency now",
+        "gridPos": { "w": 30 },
+        "singlestat": {
+          "unit": "milliseconds",
+          "query": {
+            "datasourceID": "graphite",
+            "expr": "divideSeries(sumSeries(MediaWiki.api.*.executeTiming.sum),sumSeries(MediaWiki.api.*.executeTiming.count))"
+          },
+          "thresholds": [
+            { "color": "#299c46" },
+            { "color": "#FF780A", "startValue": 350 },
+            { "color": "#d44a3a", "startValue": 600 }
+          ]
+        }
+      },
+      {
+        "title": "Top 10 load breakdown",
+        "gridPos": { "w": 50 },
+        "graph": {
+          "visualization": {
+            "seriesOverride": [{ "regex": ".*", "nullPointMode": "connected" }]
+          },
+          "queries": [
+            {
+              "datasourceID": "graphite",
+              "expr": "aliasByNode(highestAverage(scaleToSeconds(MediaWiki.api.*.executeTiming.sum,0.001), 10), 2)"
+            }
+          ]
+        }
+      },
+      {
+        "title": "Top 10 load (percentage)",
+        "gridPos": { "w": 50 },
+        "graph": {
+          "visualization": {
+            "yAxis": { "unit": "percent" },
+            "seriesOverride": [{ "regex": ".*", "nullPointMode": "connected" }]
+          },
+          "queries": [
+            {
+              "datasourceID": "graphite",
+              "expr": "aliasByNode(asPercent(highestAverage(MediaWiki.api.*.executeTiming.sum, 10), alias(sumSeries(MediaWiki.api.*.executeTiming.sum), 'Total')), 2)"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
