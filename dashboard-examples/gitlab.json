@@ -3,7 +3,7 @@
   "datasources": {
     "gitlab": {
       "prometheus": {
-        "address": "https://dashboards.gitlab.com/api/datasources/proxy/6/"
+        "address": "https://dashboards.gitlab.com/api/datasources/proxy/1/"
       }
     }
   },
