@@ -85,7 +85,7 @@ func TestGathererGatherSingle(t *testing.T) {
 
 			// Mocks.
 			mapi := &mpromv1.API{}
-			mapi.On("Query", mock.Anything, mock.Anything, mock.Anything).Once().Return(test.prommetric, expErr)
+			mapi.On("Query", mock.Anything, mock.Anything, mock.Anything).Once().Return(test.prommetric, nil, expErr)
 			test.cfg.Client = mapi
 
 			g := prometheus.NewGatherer(test.cfg)
@@ -235,7 +235,7 @@ func TestGathererGatherRange(t *testing.T) {
 
 			// Mocks.
 			mapi := &mpromv1.API{}
-			mapi.On("QueryRange", mock.Anything, mock.Anything, mock.Anything).Once().Return(test.prommetric, expErr)
+			mapi.On("QueryRange", mock.Anything, mock.Anything, mock.Anything).Once().Return(test.prommetric, nil, expErr)
 			test.cfg.Client = mapi
 
 			g := prometheus.NewGatherer(test.cfg)

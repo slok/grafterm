@@ -37,7 +37,7 @@ func NewGatherer(cfg ConfigGatherer) metric.Gatherer {
 
 func (g *gatherer) GatherSingle(ctx context.Context, query model.Query, t time.Time) ([]model.MetricSeries, error) {
 	// Get value from Prometheus.
-	val, err := g.cli.Query(ctx, query.Expr, t)
+	val, _, err := g.cli.Query(ctx, query.Expr, t)
 	if err != nil {
 		return []model.MetricSeries{}, err
 	}
@@ -53,7 +53,7 @@ func (g *gatherer) GatherSingle(ctx context.Context, query model.Query, t time.T
 
 func (g *gatherer) GatherRange(ctx context.Context, query model.Query, start, end time.Time, step time.Duration) ([]model.MetricSeries, error) {
 	// Get value from Prometheus.
-	val, err := g.cli.QueryRange(ctx, query.Expr, promv1.Range{
+	val, _, err := g.cli.QueryRange(ctx, query.Expr, promv1.Range{
 		Start: start,
 		End:   end,
 		Step:  step,

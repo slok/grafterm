@@ -2,6 +2,7 @@
 
 package v1
 
+import api "github.com/prometheus/client_golang/api"
 import context "context"
 import mock "github.com/stretchr/testify/mock"
 import model "github.com/prometheus/common/model"
@@ -23,6 +24,27 @@ func (_m *API) AlertManagers(ctx context.Context) (v1.AlertManagersResult, error
 		r0 = rf(ctx)
 	} else {
 		r0 = ret.Get(0).(v1.AlertManagersResult)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Alerts provides a mock function with given fields: ctx
+func (_m *API) Alerts(ctx context.Context) (v1.AlertsResult, error) {
+	ret := _m.Called(ctx)
+
+	var r0 v1.AlertsResult
+	if rf, ok := ret.Get(0).(func(context.Context) v1.AlertsResult); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(v1.AlertsResult)
 	}
 
 	var r1 error
@@ -107,6 +129,29 @@ func (_m *API) Flags(ctx context.Context) (v1.FlagsResult, error) {
 	return r0, r1
 }
 
+// LabelNames provides a mock function with given fields: ctx
+func (_m *API) LabelNames(ctx context.Context) ([]string, error) {
+	ret := _m.Called(ctx)
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func(context.Context) []string); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // LabelValues provides a mock function with given fields: ctx, label
 func (_m *API) LabelValues(ctx context.Context, label string) (model.LabelValues, error) {
 	ret := _m.Called(ctx, label)
@@ -131,7 +176,7 @@ func (_m *API) LabelValues(ctx context.Context, label string) (model.LabelValues
 }
 
 // Query provides a mock function with given fields: ctx, query, ts
-func (_m *API) Query(ctx context.Context, query string, ts time.Time) (model.Value, error) {
+func (_m *API) Query(ctx context.Context, query string, ts time.Time) (model.Value, api.Warnings, error) {
 	ret := _m.Called(ctx, query, ts)
 
 	var r0 model.Value
@@ -143,18 +188,27 @@ func (_m *API) Query(ctx context.Context, query string, ts time.Time) (model.Val
 		}
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, time.Time) error); ok {
+	var r1 api.Warnings
+	if rf, ok := ret.Get(1).(func(context.Context, string, time.Time) api.Warnings); ok {
 		r1 = rf(ctx, query, ts)
 	} else {
-		r1 = ret.Error(1)
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(api.Warnings)
+		}
 	}
 
-	return r0, r1
+	var r2 error
+	if rf, ok := ret.Get(2).(func(context.Context, string, time.Time) error); ok {
+		r2 = rf(ctx, query, ts)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // QueryRange provides a mock function with given fields: ctx, query, r
-func (_m *API) QueryRange(ctx context.Context, query string, r v1.Range) (model.Value, error) {
+func (_m *API) QueryRange(ctx context.Context, query string, r v1.Range) (model.Value, api.Warnings, error) {
 	ret := _m.Called(ctx, query, r)
 
 	var r0 model.Value
@@ -166,9 +220,39 @@ func (_m *API) QueryRange(ctx context.Context, query string, r v1.Range) (model.
 		}
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, v1.Range) error); ok {
+	var r1 api.Warnings
+	if rf, ok := ret.Get(1).(func(context.Context, string, v1.Range) api.Warnings); ok {
 		r1 = rf(ctx, query, r)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(api.Warnings)
+		}
+	}
+
+	var r2 error
+	if rf, ok := ret.Get(2).(func(context.Context, string, v1.Range) error); ok {
+		r2 = rf(ctx, query, r)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
+// Rules provides a mock function with given fields: ctx
+func (_m *API) Rules(ctx context.Context) (v1.RulesResult, error) {
+	ret := _m.Called(ctx)
+
+	var r0 v1.RulesResult
+	if rf, ok := ret.Get(0).(func(context.Context) v1.RulesResult); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(v1.RulesResult)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -177,7 +261,7 @@ func (_m *API) QueryRange(ctx context.Context, query string, r v1.Range) (model.
 }
 
 // Series provides a mock function with given fields: ctx, matches, startTime, endTime
-func (_m *API) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]model.LabelSet, error) {
+func (_m *API) Series(ctx context.Context, matches []string, startTime time.Time, endTime time.Time) ([]model.LabelSet, api.Warnings, error) {
 	ret := _m.Called(ctx, matches, startTime, endTime)
 
 	var r0 []model.LabelSet
@@ -189,14 +273,23 @@ func (_m *API) Series(ctx context.Context, matches []string, startTime time.Time
 		}
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, []string, time.Time, time.Time) error); ok {
+	var r1 api.Warnings
+	if rf, ok := ret.Get(1).(func(context.Context, []string, time.Time, time.Time) api.Warnings); ok {
 		r1 = rf(ctx, matches, startTime, endTime)
 	} else {
-		r1 = ret.Error(1)
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(api.Warnings)
+		}
 	}
 
-	return r0, r1
+	var r2 error
+	if rf, ok := ret.Get(2).(func(context.Context, []string, time.Time, time.Time) error); ok {
+		r2 = rf(ctx, matches, startTime, endTime)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // Snapshot provides a mock function with given fields: ctx, skipHead
@@ -234,6 +327,29 @@ func (_m *API) Targets(ctx context.Context) (v1.TargetsResult, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
 		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// TargetsMetadata provides a mock function with given fields: ctx, matchTarget, metric, limit
+func (_m *API) TargetsMetadata(ctx context.Context, matchTarget string, metric string, limit string) ([]v1.MetricMetadata, error) {
+	ret := _m.Called(ctx, matchTarget, metric, limit)
+
+	var r0 []v1.MetricMetadata
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) []v1.MetricMetadata); ok {
+		r0 = rf(ctx, matchTarget, metric, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]v1.MetricMetadata)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string) error); ok {
+		r1 = rf(ctx, matchTarget, metric, limit)
 	} else {
 		r1 = ret.Error(1)
 	}
