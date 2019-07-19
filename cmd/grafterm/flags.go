@@ -17,7 +17,6 @@ const (
 	defConfig          = "dashboard.json"
 	defRefreshInterval = "10s"
 	defLogPath         = "grafterm.log"
-	defRelativeDur     = "1h"
 	defGraftermDir     = "grafterm"
 )
 
