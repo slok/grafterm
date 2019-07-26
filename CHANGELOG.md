@@ -1,9 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.0] - 2019-07-26
 
 ### Added
 
+- ARM release builds.
 - Add `nullPointMode` series override setting (with `zero` and `connected` strategies).
 - Graphite datasource.
 - Milliseconds unit conversion.
