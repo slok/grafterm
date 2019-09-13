@@ -57,6 +57,18 @@ Options:
 
 - `address`: Address to Graphite API
 
+#### [InfluxDB]
+
+This will gather metrics from InfluxDB backends.
+
+Options:
+
+- `address`: Address to InfluxDB API
+- `database`: Database to use
+- `username`: Username for basic auth
+- `password`: Password for basic auth
+- `insecure`: True to allow insecure https
+
 ## Dashboard
 
 The dashboard contains the dashboard configuration and is composed of multiple smaller configuration blocks.

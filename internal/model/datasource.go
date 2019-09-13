@@ -13,6 +13,7 @@ type DatasourceSource struct {
 	Fake       *FakeDatasource       `json:"fake,omitempty"`
 	Prometheus *PrometheusDatasource `json:"prometheus,omitempty"`
 	Graphite   *GraphiteDatasource   `json:"graphite,omitempty"`
+	InfluxDB   *InfluxDBDatasource   `json:"influxdb,omitempty"`
 }
 
 // FakeDatasource is the fake datasource.
@@ -28,6 +29,15 @@ type GraphiteDatasource struct {
 	Address string `json:"address,omitempty"`
 }
 
+// InfluxDBDatasource is the Graphite kind datasource.
+type InfluxDBDatasource struct {
+	Address  string `json:"address,omitempty"`
+	Insecure bool   `json:"insecure,omitempty"`
+	Database string `json:"database,omitempty"`
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
+}
+
 // Validate validates the object model is correct.
 func (d Datasource) Validate() error {
 	if d.ID == "" {
@@ -41,6 +51,8 @@ func (d Datasource) Validate() error {
 		err = d.Prometheus.validate()
 	case d.Graphite != nil:
 		err = d.Graphite.validate()
+	case d.InfluxDB != nil:
+		err = d.InfluxDB.validate()
 	case d.Fake != nil:
 	default:
 		err = fmt.Errorf("declared datasource %s can't be empty", d.ID)
@@ -63,6 +75,14 @@ func (p PrometheusDatasource) validate() error {
 func (g GraphiteDatasource) validate() error {
 	if g.Address == "" {
 		return fmt.Errorf("Graphite API address can't be empty")
+	}
+
+	return nil
+}
+
+func (g InfluxDBDatasource) validate() error {
+	if g.Address == "" {
+		return fmt.Errorf("InfluxDB API address can't be empty")
 	}
 
 	return nil
