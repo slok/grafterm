@@ -10,10 +10,14 @@ import (
 	prometheusapi "github.com/prometheus/client_golang/api"
 	prometheusv1 "github.com/prometheus/client_golang/api/prometheus/v1"
 
+	_ "github.com/influxdata/influxdb1-client" // needed due to go mod bug
+	influxdbv2 "github.com/influxdata/influxdb1-client/v2"
+
 	"github.com/slok/grafterm/internal/model"
 	"github.com/slok/grafterm/internal/service/metric"
 	"github.com/slok/grafterm/internal/service/metric/fake"
 	"github.com/slok/grafterm/internal/service/metric/graphite"
+	"github.com/slok/grafterm/internal/service/metric/influxdb"
 	"github.com/slok/grafterm/internal/service/metric/prometheus"
 )
 
@@ -40,6 +44,8 @@ type ConfigGatherer struct {
 	CreatePrometheusFunc func(ds model.PrometheusDatasource) (metric.Gatherer, error)
 	// CreateGraphiteFunc is the function that will be called to create Graphite gatherers.
 	CreateGraphiteFunc func(ds model.GraphiteDatasource) (metric.Gatherer, error)
+	// CreateInfluxDBFunc is the function that will be called to create InfluxDB gatherers.
+	CreateInfluxDBFunc func(ds model.InfluxDBDatasource) (metric.Gatherer, error)
 }
 
 func (c *ConfigGatherer) defaults() {
@@ -75,6 +81,33 @@ func (c *ConfigGatherer) defaults() {
 				HTTPCli: &http.Client{
 					Timeout: defGraphiteTimeout,
 				},
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			return g, nil
+		}
+	}
+
+	// Set default creator function for InfluxDB.
+	if c.CreateInfluxDBFunc == nil {
+		c.CreateInfluxDBFunc = func(ds model.InfluxDBDatasource) (metric.Gatherer, error) {
+
+			cli, err := influxdbv2.NewHTTPClient(
+				influxdbv2.HTTPConfig{
+					Addr: ds.Address, InsecureSkipVerify: ds.Insecure,
+					Username: ds.Username, Password: ds.Password,
+				},
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			g, err := influxdb.NewGatherer(influxdb.ConfigGatherer{
+				Addr:     ds.Address,
+				Database: ds.Database,
+				Client:   cli,
 			})
 			if err != nil {
 				return nil, err
@@ -176,6 +209,8 @@ func createGatherer(cfg ConfigGatherer, ds model.Datasource) (metric.Gatherer, e
 		return cfg.CreatePrometheusFunc(*ds.Prometheus)
 	case ds.Graphite != nil:
 		return cfg.CreateGraphiteFunc(*ds.Graphite)
+	case ds.InfluxDB != nil:
+		return cfg.CreateInfluxDBFunc(*ds.InfluxDB)
 	case ds.Fake != nil:
 		return cfg.CreateFakeFunc(*ds.Fake)
 	}
