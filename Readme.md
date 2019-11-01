@@ -2,7 +2,7 @@
 
 Visualize metrics dashboards on the terminal, like a simplified and minimalist version of [Grafana] for terminal.
 
-![grafterm red dashboard](/img/grafterm-red-compressed.gif)
+![grafterm red dashboard](/img/grafterm-red-compressed.gif)1
 
 ## Features
 
