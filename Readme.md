@@ -132,6 +132,9 @@ Grafterm dashboards can have default datasources but the user can override these
     "m3db": {
       "prometheus": { "address": "http://127.0.0.1:9093" }
     },
+    "victoriametrics": {
+      "prometheus": { "address": "http://127.0.0.1:8428" }
+    },
     "wikimedia": {
       "graphite": { "address": "https://graphite.wikimedia.org" }
     }
