@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.1] - 2021-05-07
+
+### Fixed
+
+- Updated Testify to v1.7.0 to resovle issue #60; a CVE 6.5 present in the Yaml package that Testify v1.4.0 uses.
+
 ## [0.2.0] - 2019-07-26
 
 ### Added

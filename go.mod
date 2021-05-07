@@ -1,5 +1,7 @@
 module github.com/slok/grafterm
 
+go 1.15
+
 require (
 	github.com/DATA-DOG/go-sqlmock v1.3.3 // indirect
 	github.com/JensRantil/graphite-client v0.0.0-20151206234601-d93bf4b72f5a
@@ -16,5 +18,5 @@ require (
 	github.com/prometheus/client_golang v1.0.0
 	github.com/prometheus/common v0.6.0
 	github.com/rs/zerolog v1.13.0
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.7.0
 )
