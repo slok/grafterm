@@ -7,10 +7,11 @@ RUN apk --no-cache add \
     git \
     bash
 
-ENV GOPROXY=https://gocenter.io
+ENV GOPROXY=https://proxy.golang.org
+ENV GO111MODULE=on
 
 # Mock creator
-RUN go get -u github.com/vektra/mockery/.../
+RUN go get -u github.com/vektra/mockery/
 
 # Create user
 ARG uid=1000
