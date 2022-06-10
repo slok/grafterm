@@ -56,7 +56,7 @@ func (m *Main) Run() error {
 	if err != nil {
 		return err
 	}
-	m.logger.Infof("Configuration: %+v\n", cfg)
+
 	ddss, err := cfg.Datasources()
 	if err != nil {
 		return err
@@ -171,7 +171,6 @@ func loadConfiguration(cfgPath string) (configuration.Configuration, error) {
 
 	switch filepath.Ext(cfgPath) {
 	case ".yaml", ".yml":
-		fmt.Fprintln(os.Stdout, "Using YAML Loader...")
 		cfg, err := configuration.YAMLLoader{}.Load(f)
 		if err != nil {
 			return nil, err
@@ -181,7 +180,6 @@ func loadConfiguration(cfgPath string) (configuration.Configuration, error) {
 	case ".json":
 		fallthrough
 	default:
-		fmt.Fprintln(os.Stdout, "Using JSON Loader...")
 		cfg, err := configuration.JSONLoader{}.Load(f)
 		if err != nil {
 			return nil, err
