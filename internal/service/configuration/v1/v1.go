@@ -22,9 +22,9 @@ type Dashboard struct {
 
 // Configuration is the v1 configuration.Satisfies configuration.Configuration interface.
 type Configuration struct {
-	meta.Meta     `json:",inline"`
-	V1Datasources map[string]*Datasource `json:"datasources,omitempty"`
-	V1Dashboard   Dashboard              `json:"dashboard,omitempty"`
+	meta.Meta     `json:",inline" yaml:",inline"`
+	V1Datasources map[string]*Datasource `json:"datasources,omitempty" yaml:"datasources"`
+	V1Dashboard   Dashboard              `json:"dashboard,omitempty" yaml:"dashboard"`
 }
 
 // Version satisfies Configuration interface.

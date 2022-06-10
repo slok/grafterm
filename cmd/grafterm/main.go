@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -55,7 +56,7 @@ func (m *Main) Run() error {
 	if err != nil {
 		return err
 	}
-
+	m.logger.Infof("Configuration: %+v\n", cfg)
 	ddss, err := cfg.Datasources()
 	if err != nil {
 		return err
@@ -168,12 +169,25 @@ func loadConfiguration(cfgPath string) (configuration.Configuration, error) {
 	}
 	defer f.Close()
 
-	cfg, err := configuration.JSONLoader{}.Load(f)
-	if err != nil {
-		return nil, err
-	}
+	switch filepath.Ext(cfgPath) {
+	case ".yaml", ".yml":
+		fmt.Fprintln(os.Stdout, "Using YAML Loader...")
+		cfg, err := configuration.YAMLLoader{}.Load(f)
+		if err != nil {
+			return nil, err
+		}
+		return cfg, nil
 
-	return cfg, nil
+	case ".json":
+		fallthrough
+	default:
+		fmt.Fprintln(os.Stdout, "Using JSON Loader...")
+		cfg, err := configuration.JSONLoader{}.Load(f)
+		if err != nil {
+			return nil, err
+		}
+		return cfg, nil
+	}
 }
 
 func (m *Main) loadUserDatasources() ([]model.Datasource, error) {
