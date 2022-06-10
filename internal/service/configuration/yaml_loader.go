@@ -1,49 +1,50 @@
 package configuration
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/slok/grafterm/internal/service/configuration/meta"
 	v1 "github.com/slok/grafterm/internal/service/configuration/v1"
 )
 
-// JSONLoader will load configuration in JSON format.
+// YAMLLoader will load configuration in YAML format.
 // It autodetects the version configuration so the user
 // doesn't know what version of configuration is loading.
-type JSONLoader struct{}
+type YAMLLoader struct{}
 
 // Load satisfies configuration.Loader interface.
-func (j JSONLoader) Load(r io.Reader) (Configuration, error) {
+func (j YAMLLoader) Load(r io.Reader) (Configuration, error) {
 	bs, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
 
-	cfg, err := newJSONConfig(bs)
+	cfg, err := newYAMLConfig(bs)
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal(bs, cfg)
+	err = yaml.Unmarshal(bs, cfg)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling json: %s", err)
+		return nil, fmt.Errorf("error unmarshalling yaml: %s", err)
 	}
 
 	return cfg, nil
 }
 
-// newJSONConfig will get the correct object configuration
+// newYAMLConfig will get the correct object configuration
 // based on the version of the configuration file.
-func newJSONConfig(cfgData []byte) (Configuration, error) {
+func newYAMLConfig(cfgData []byte) (Configuration, error) {
 	cfgVersion := &struct {
-		meta.Meta
+		meta.Meta `yaml:",inline"`
 	}{}
-	err := json.Unmarshal(cfgData, cfgVersion)
+	err := yaml.Unmarshal(cfgData, cfgVersion)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling json: %s", err)
+		return nil, fmt.Errorf("error unmarshalling yaml: %s", err)
 	}
 
 	var cfg Configuration
