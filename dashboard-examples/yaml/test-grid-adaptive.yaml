@@ -1,0 +1,76 @@
+version: v1
+datasources:
+  ds:
+    fake: {}
+dashboard:
+  widgets:
+    - title: ''
+      gridPos:
+        x: 0
+        y: 0
+        w: 100
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - title: ''
+      gridPos:
+        x: 0
+        y: 0
+        w: 50
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - title: ''
+      gridPos:
+        x: 0
+        y: 0
+        w: 75
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - title: ''
+      gridPos:
+        x: 0
+        y: 0
+        w: 10
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - title: ''
+      gridPos:
+        x: 0
+        y: 0
+        w: 10
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - title: ''
+      gridPos:
+        x: 0
+        y: 0
+        w: 50
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - title: ''
+      gridPos:
+        x: 0
+        y: 0
+        w: 100
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test

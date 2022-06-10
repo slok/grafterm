@@ -1,0 +1,197 @@
+version: v1
+datasources:
+  ds:
+    fake: {}
+dashboard:
+  grid:
+    fixedWidgets: true
+  widgets:
+    - gridPos:
+        x: 0
+        y: 0
+        w: 50
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 50
+        y: 0
+        w: 50
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 0
+        y: 1
+        w: 15
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 25
+        y: 1
+        w: 15
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 50
+        y: 1
+        w: 15
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 75
+        y: 1
+        w: 15
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 15
+        y: 2
+        w: 10
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 40
+        y: 2
+        w: 10
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 65
+        y: 2
+        w: 10
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 90
+        y: 2
+        w: 10
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 0
+        y: 3
+        w: 100
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 0
+        y: 4
+        w: 5
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 10
+        y: 4
+        w: 5
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 20
+        y: 4
+        w: 5
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 30
+        y: 4
+        w: 5
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 40
+        y: 4
+        w: 5
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 50
+        y: 4
+        w: 5
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 60
+        y: 4
+        w: 5
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 70
+        y: 4
+        w: 5
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 80
+        y: 4
+        w: 5
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
+    - gridPos:
+        x: 90
+        y: 4
+        w: 5
+        h: 0
+      graph:
+        queries:
+          - datasourceID: ds
+            expr: test
