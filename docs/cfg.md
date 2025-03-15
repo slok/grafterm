@@ -377,3 +377,4 @@ Units come in combination with the `decimals` settings.
 [dashboard-examples]: /dashboard-examples
 [prometheus]: http://prometheus.io
 [graphite]: http://graphiteapp.org
+[influxdb]: https://www.influxdata.com/
